@@ -1,0 +1,5285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>No Son De Raza — El amor no tiene pedigrí | Rescate y Adopción</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    
+    html.lenis, html.lenis body {
+      height: auto;
+    }
+    .lenis.lenis-smooth {
+      scroll-behavior: auto !important;
+    }
+    .lenis.lenis-smooth [data-lenis-prevent] {
+      overscroll-behavior: contain;
+    }
+    .lenis.lenis-stopped {
+      overflow: hidden;
+    }
+    .lenis.lenis-scrolling iframe {
+      pointer-events: none;
+    }
+
+    body {
+      width: 100%;
+      background-color: #97522d;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: #FAF5EE;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    
+    .scroll-experience-wrapper {
+      position: relative;
+      height: 400vh;
+      width: 100%;
+    }
+
+    .sticky-viewport-stage {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: #97522d;
+      perspective: 1400px;
+    }
+
+    
+    .stage-ambient-glow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 100% 50%, rgba(252, 213, 154, 0.16) 0%, rgba(151, 82, 45, 0.95) 70%);
+      z-index: 1;
+    }
+
+    
+    .hero-text-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: clamp(2.5rem, 5vw, 5rem);
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+
+    .hero-content {
+      max-width: 620px;
+      margin-bottom: clamp(3rem, 7vh, 4.5rem);
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4.8vw, 4rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      text-wrap: balance;
+      text-shadow: 0 4px 24px rgba(40, 15, 5, 0.85);
+    }
+
+    .hero-subtitle {
+      margin-top: 1.25rem;
+      font-size: clamp(0.98rem, 1.3vw, 1.15rem);
+      font-weight: 400;
+      line-height: 1.6;
+      color: #FAF5EE;
+      max-width: 50ch;
+      text-wrap: pretty;
+      text-shadow: 0 2px 12px rgba(40, 15, 5, 0.9);
+    }
+
+    .hero-scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      pointer-events: none;
+      background: radial-gradient(circle at 15% 85%, rgba(45, 18, 7, 0.38) 0%, rgba(45, 18, 7, 0) 50%),
+                  linear-gradient(to top, rgba(45, 18, 7, 0.22) 0%, rgba(45, 18, 7, 0) 20%);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: clamp(1.75rem, 4vh, 2.75rem);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      pointer-events: auto;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      filter: drop-shadow(0 3px 10px rgba(43, 33, 26, 0.85)) drop-shadow(0 1px 2px rgba(43, 33, 26, 0.9));
+      will-change: opacity, transform;
+    }
+
+    .scroll-arrow-svg {
+      width: clamp(38px, 4vw, 48px);
+      height: clamp(38px, 4vw, 48px);
+      stroke: #f7f3ed;
+      animation: gentle-bounce 2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      will-change: transform;
+    }
+
+    @keyframes gentle-bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.85; }
+      50% { transform: translateY(12px); opacity: 1; }
+    }
+
+    
+    .carousel-info-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: clamp(340px, 42vw, 560px);
+      z-index: 40;
+      padding: clamp(2.5rem, 5vw, 5rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-35px);
+      will-change: opacity, transform;
+    }
+
+    .carousel-info-panel.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .panel-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .panel-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .panel-index-counter {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: #FCD59A;
+      font-variant-numeric: tabular-nums;
+      padding: 0.22rem 0.5rem;
+      border: 1px solid rgba(252, 213, 154, 0.35);
+      border-radius: 4px;
+      background: rgba(252, 213, 154, 0.12);
+      line-height: 1;
+    }
+
+    .panel-tagline {
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(250, 245, 238, 0.75);
+      font-weight: 600;
+    }
+
+    .ver-mas-link {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #FCD59A;
+      text-decoration: none;
+      padding-bottom: 2px;
+      border-bottom: 1px solid rgba(252, 213, 154, 0.45);
+      white-space: nowrap;
+      transition-property: border-color, color, opacity;
+      transition-duration: 200ms;
+    }
+
+    .ver-mas-link:hover {
+      border-bottom-color: #FFFFFF;
+      color: #FFFFFF;
+      opacity: 0.95;
+    }
+
+    .panel-pet-name {
+      font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: #FAF5EE;
+      margin-bottom: 1.15rem;
+      transition-property: opacity, transform;
+      transition-duration: 250ms;
+    }
+
+    .panel-pet-story {
+      font-size: clamp(1rem, 1.25vw, 1.15rem);
+      line-height: 1.68;
+      color: #F4E9DC;
+      max-width: 44ch;
+      text-wrap: pretty;
+      margin-bottom: 1.75rem;
+      transition-property: opacity, transform;
+      transition-duration: 250ms;
+    }
+
+    .panel-address-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem 1.15rem;
+      background: rgba(105, 48, 20, 0.45);
+      border: 1px solid rgba(255, 235, 215, 0.22);
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+
+    .panel-address-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+      stroke: #FCD59A;
+    }
+
+    .panel-address-text {
+      font-size: 0.88rem;
+      color: #F4E9DC;
+      line-height: 1.45;
+    }
+
+    .panel-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .panel-expand-btn {
+      padding: 0.75rem 1.4rem;
+      border-radius: 8px;
+      background: #FAF5EE;
+      color: #7D3B18;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(40, 15, 5, 0.35);
+      transition-property: transform, opacity, box-shadow, background-color;
+      transition-duration: 180ms;
+    }
+
+    .panel-expand-btn:hover {
+      transform: translateY(-2px);
+      background: #FFFFFF;
+      box-shadow: 0 6px 22px rgba(40, 15, 5, 0.45);
+    }
+
+    .nav-arrow-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(105, 48, 20, 0.45);
+      border: 1px solid rgba(255, 235, 215, 0.22);
+      color: #FAF5EE;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition-property: background-color, border-color, transform;
+      transition-duration: 180ms;
+    }
+
+    .nav-arrow-btn:hover {
+      background-color: rgba(135, 65, 30, 0.65);
+      border-color: #FCD59A;
+      transform: translateY(-2px);
+    }
+
+    
+    .wheel-stage-wrapper {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    
+    .wheel-drum-rig {
+      position: absolute;
+      top: 50%;
+      right: -500px; 
+      width: 1000px;
+      height: 1000px;
+      margin-top: -500px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 50%, #884521 0%, #7B3E1D 65%, #6D3517 100%);
+      border: 1px solid rgba(255, 235, 215, 0.16);
+      box-shadow: inset 0 0 80px rgba(60, 25, 10, 0.5), 0 20px 50px rgba(40, 15, 5, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    
+    .wheel-orbit-track {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 840px;
+      height: 840px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 225, 195, 0.22);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    
+    .wheel-focal-gate {
+      position: absolute;
+      top: 50%;
+      left: calc(50% - 420px);
+      transform: translate(-50%, -50%);
+      width: 298px;
+      height: 193px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(252, 213, 154, 0.45);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .wheel-rotor {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      transform-origin: center center;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+      z-index: 4;
+    }
+
+    .wheel-core {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 50%, #7E3F1E 0%, #683215 75%);
+      border: 1px solid rgba(255, 235, 215, 0.16);
+      box-shadow: inset 0 0 20px rgba(50, 20, 8, 0.5);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    
+    .wheel-card-slot {
+      position: absolute;
+      width: 280px;
+      height: 175px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #844220;
+      border: 1px solid rgba(255, 235, 215, 0.15);
+      box-shadow: 0 14px 32px rgba(45, 18, 7, 0.35);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transform-origin: center center;
+      opacity: 0.52;
+      filter: saturate(0.9) brightness(0.95);
+      transition-property: opacity, filter, border-color, box-shadow;
+      transition-duration: 350ms;
+      transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, opacity;
+    }
+
+    .wheel-card-slot:hover {
+      opacity: 0.88;
+      filter: saturate(1) brightness(1);
+      border-color: rgba(252, 213, 154, 0.6);
+      z-index: 15;
+    }
+
+    .wheel-card-slot.active-slot {
+      opacity: 1;
+      filter: saturate(1.05) brightness(1);
+      border: 2px solid #FCD59A;
+      box-shadow: 0 0 32px rgba(252, 213, 154, 0.4), 0 18px 40px rgba(40, 15, 5, 0.35);
+      z-index: 20;
+    }
+
+    .slot-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    .slot-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.25rem 1rem 0.65rem 1rem;
+      background: linear-gradient(to top, rgba(40, 15, 5, 0.92) 0%, rgba(40, 15, 5, 0) 100%);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .slot-caption-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+
+    .slot-caption-loc {
+      font-size: 0.70rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(250, 245, 238, 0.82);
+      margin-top: 0.15rem;
+    }
+
+    
+    .hero-transition-unit {
+      position: absolute;
+      overflow: hidden;
+      background: #844220;
+      will-change: transform, width, height, left, top, border-radius;
+      z-index: 18;
+      cursor: pointer;
+      transform-origin: center center;
+      transition-property: border-color, box-shadow, opacity, filter;
+      transition-duration: 350ms;
+      transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-transition-unit.wheel-card-slot {
+      z-index: 12;
+      border: 1px solid rgba(255, 235, 215, 0.15);
+      box-shadow: 0 14px 32px rgba(45, 18, 7, 0.35);
+      opacity: 0.52;
+      filter: saturate(0.9) brightness(0.95);
+    }
+
+    .hero-transition-unit.wheel-card-slot:hover {
+      opacity: 0.88;
+      filter: saturate(1) brightness(1);
+      border-color: rgba(252, 213, 154, 0.6);
+      z-index: 25;
+    }
+
+    .hero-transition-unit.wheel-card-slot.active-slot {
+      opacity: 1;
+      filter: saturate(1.05) brightness(1);
+      border: 2px solid #FCD59A;
+      box-shadow: 0 0 32px rgba(252, 213, 154, 0.4), 0 18px 40px rgba(40, 15, 5, 0.35);
+      z-index: 20;
+    }
+
+    .hero-transition-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 52%;
+      transition-property: opacity;
+      transition-duration: 450ms;
+      will-change: opacity;
+    }
+
+    
+    .pet-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background-color: rgba(45, 18, 7, 0.65);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition-property: opacity;
+      transition-duration: 250ms;
+      transition-timing-function: ease-out;
+    }
+
+    .pet-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .pet-modal {
+      position: relative;
+      background-color: #FAF7EF;
+      border: 1px solid rgba(151, 82, 45, 0.22);
+      box-shadow: 0 25px 65px rgba(44, 24, 16, 0.35);
+      border-radius: 16px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.96) translateY(10px);
+      transition-property: transform;
+      transition-duration: 260ms;
+      transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pet-modal-backdrop.open .pet-modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #97522d;
+      border: 1px solid rgba(151, 82, 45, 0.3);
+      color: #FAF5EE;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition-property: background-color, transform;
+      transition-duration: 180ms;
+    }
+
+    .modal-close-btn:hover {
+      background-color: #803f1e;
+      transform: scale(1.05);
+    }
+
+    .modal-image-wrapper {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background-color: #DDD4BF;
+    }
+
+    .modal-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .modal-body {
+      padding: clamp(1.5rem, 3.5vw, 2.2rem);
+    }
+
+    .modal-pet-name {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #2C1810;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-section-label {
+      margin-top: 1.35rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #97522d;
+    }
+
+    .modal-review-text {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: #5C4132;
+      text-wrap: pretty;
+    }
+
+    .modal-address-box {
+      margin-top: 1.6rem;
+      padding: 1rem 1.25rem;
+      background-color: rgba(151, 82, 45, 0.08);
+      border-radius: 10px;
+      border: 1px solid rgba(151, 82, 45, 0.18);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+    }
+
+    .modal-address-icon {
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+      width: 20px;
+      height: 20px;
+      stroke: #97522d;
+    }
+
+    .modal-address-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #4A3022;
+    }
+
+    
+    .app-view {
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .catalog-view-section {
+      display: none;
+      background-color: #EDE8D0;
+      min-height: 100vh;
+      position: relative;
+      z-index: 20;
+    }
+
+    .catalog-view-section.active-view {
+      display: block;
+    }
+
+    .catalog-ambient {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 90% 12%, rgba(252, 213, 154, 0.25) 0%, transparent 55%),
+                  radial-gradient(circle at 8% 88%, rgba(151, 82, 45, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .catalog-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem clamp(1.5rem, 5vw, 4.5rem);
+      background: rgba(237, 232, 208, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(151, 82, 45, 0.12);
+    }
+
+    .catalogo-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #FAF5EE;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      padding: 0.55rem 1.1rem;
+      border-radius: 8px;
+      background: #97522d;
+      border: 1px solid #7E3E1B;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(151, 82, 45, 0.22);
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .catalogo-back-link:hover {
+      background: #823F1C;
+      border-color: #6D3517;
+      transform: translateX(-3px);
+      box-shadow: 0 4px 12px rgba(151, 82, 45, 0.32);
+    }
+
+    .catalog-nav-brand {
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7A4022;
+      font-weight: 600;
+    }
+
+    .catalog-main {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(3rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4.5rem) 6rem;
+    }
+
+    .catalog-hero-header {
+      margin-bottom: 3.5rem;
+    }
+
+    .catalog-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      color: #23140C;
+    }
+
+    .catalog-desc {
+      margin-top: 0.85rem;
+      font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+      color: #523D32;
+      max-width: 620px;
+      line-height: 1.6;
+    }
+
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .catalog-card {
+      background-color: #F8F5EC;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid rgba(151, 82, 45, 0.14);
+      box-shadow: 0 2px 5px rgba(70, 35, 12, 0.04), 0 14px 28px -4px rgba(70, 35, 12, 0.08);
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.25s ease,
+                  box-shadow 0.25s ease;
+      will-change: opacity, transform;
+    }
+
+    .catalog-card.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .catalog-card.in-view:hover {
+      transform: translateY(-6px);
+      border-color: #97522d;
+      box-shadow: 0 4px 10px rgba(70, 35, 12, 0.06), 0 22px 38px -6px rgba(151, 82, 45, 0.18);
+    }
+
+    .card-media-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 11;
+      overflow: hidden;
+      background-color: #DDD4BF;
+    }
+
+    .card-media-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .catalog-card:hover .card-media-img {
+      transform: scale(1.04);
+    }
+
+    .card-content {
+      padding: 1.4rem 1.5rem 1.6rem;
+    }
+
+    .card-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.65rem;
+    }
+
+    .card-name {
+      font-size: 1.32rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #23140C;
+    }
+
+    .card-status {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #8D3E18;
+      background: rgba(151, 82, 45, 0.09);
+      border: 1px solid rgba(151, 82, 45, 0.2);
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      line-height: 1;
+    }
+
+    .card-story-snippet {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: #523D32;
+      margin-bottom: 1.15rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-location-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: #6E4933;
+      padding: 0.45rem 0.65rem;
+      background: rgba(151, 82, 45, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(151, 82, 45, 0.08);
+    }
+
+    .card-location-row svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      stroke: #97522d;
+    }
+
+    
+    .paw-transition-portal {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      pointer-events: none;
+      display: none;
+      background-color: transparent;
+    }
+
+    .paw-transition-portal.active {
+      display: block;
+      pointer-events: all;
+    }
+
+    .paw-fade-curtain {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #97522d;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .paw-portal-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 1;
+      opacity: 0;
+    }
+
+    @media (max-width: 900px) {
+      .wheel-stage-wrapper {
+        height: 42vh;
+        overflow: hidden;
+      }
+
+      .wheel-drum-rig {
+        width: 640px;
+        height: 640px;
+        top: 21vh;
+        left: calc(50vw + 260px);
+        right: auto;
+        margin-top: -320px;
+        margin-left: -320px;
+      }
+
+      .wheel-card-slot {
+        width: 220px;
+        height: 138px;
+      }
+
+      .wheel-orbit-track {
+        width: 520px;
+        height: 520px;
+      }
+
+      .wheel-focal-gate {
+        left: calc(50% - 260px);
+        width: 236px;
+        height: 154px;
+      }
+
+      .wheel-core {
+        width: 90px;
+        height: 90px;
+      }
+
+      .carousel-info-panel {
+        top: 42vh;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        padding: 1.25rem 1.5rem 1.75rem 1.5rem;
+        justify-content: flex-start;
+        background: #97522d;
+        border-top: 1px solid rgba(255, 235, 215, 0.18);
+        transform: translateY(20px);
+        z-index: 30;
+      }
+
+      .panel-header-row {
+        margin-bottom: 0.65rem;
+      }
+
+      .panel-header-left {
+        gap: 0.55rem;
+      }
+
+      .panel-index-counter {
+        font-size: 0.72rem;
+        padding: 0.16rem 0.42rem;
+      }
+
+      .panel-tagline {
+        font-size: 0.75rem;
+      }
+
+      .ver-mas-link {
+        font-size: 0.85rem;
+      }
+
+      .panel-pet-name {
+        font-size: clamp(1.8rem, 6.5vw, 2.3rem);
+        margin-bottom: 0.4rem;
+      }
+
+      .panel-pet-story {
+        font-size: 0.88rem;
+        line-height: 1.48;
+        max-width: 100%;
+        margin-bottom: 0.85rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .panel-address-box {
+        padding: 0.65rem 0.85rem;
+        margin-bottom: 1.15rem;
+        gap: 0.5rem;
+      }
+
+      .panel-address-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      .panel-address-text {
+        font-size: 0.8rem;
+        line-height: 1.35;
+      }
+
+      .panel-actions-group {
+        gap: 0.65rem;
+      }
+
+      .panel-expand-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        min-height: 44px;
+        font-size: 0.85rem;
+      }
+
+      .nav-arrow-btn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
+
+    
+    .rescue-intake-section {
+      position: relative;
+      background-color: #EDE8D0;
+      color: #2C1810;
+      height: 100vh;
+      min-height: 100vh;
+      max-height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(0.5rem, 1.2vh, 0.85rem) clamp(1rem, 2.5vw, 2.5rem) 0 clamp(1rem, 2.5vw, 2.5rem);
+      border-top: 1px solid rgba(44, 24, 16, 0.12);
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .intake-ambient-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 75% 55% at 50% 0%, rgba(252, 213, 154, 0.45) 0%, transparent 70%),
+                  radial-gradient(circle at 85% 85%, rgba(151, 82, 45, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .intake-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1360px;
+      flex: 1;
+      min-height: 0;
+      max-height: none;
+      background: #FAF7EE;
+      border: 1px solid rgba(44, 24, 16, 0.12);
+      border-radius: 18px;
+      box-shadow: 0 16px 48px -10px rgba(44, 24, 16, 0.12),
+                  0 2px 6px rgba(44, 24, 16, 0.04);
+      padding: clamp(0.65rem, 1.4vh, 1.25rem) clamp(1rem, 2vw, 1.75rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      box-sizing: border-box;
+      margin-bottom: clamp(0.35rem, 0.8vh, 0.65rem);
+    }
+
+    
+    .intake-header-panoramic {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: clamp(0.45rem, 1vh, 0.85rem);
+      padding-bottom: clamp(0.45rem, 1vh, 0.75rem);
+      border-bottom: 1px solid rgba(44, 24, 16, 0.08);
+      flex-shrink: 0;
+    }
+
+    .intake-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .intake-eyebrow-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .intake-eyebrow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #97522D;
+      background: rgba(151, 82, 45, 0.08);
+      border: 1px solid rgba(151, 82, 45, 0.2);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    .intake-hotline-pill {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #6F5E53;
+    }
+
+    .intake-title {
+      font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: #2C1810;
+      margin: 0;
+    }
+
+    .intake-subtitle {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: #6F5E53;
+      margin: 0;
+    }
+
+    
+    .intake-stepper-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: rgba(44, 24, 16, 0.04);
+      border: 1px solid rgba(44, 24, 16, 0.08);
+      border-radius: 9999px;
+      padding: 0.35rem 0.85rem;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .intake-step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(44, 24, 16, 0.45);
+      user-select: none;
+      transition: color 0.18s ease;
+    }
+
+    .intake-step-indicator.active {
+      color: #2C1810;
+    }
+
+    .intake-step-indicator.completed {
+      color: #3A6946;
+    }
+
+    .step-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .intake-step-indicator .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(44, 24, 16, 0.08);
+      color: #6F5E53;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    .intake-step-indicator.active .step-num {
+      background: #97522D;
+      color: #FAF7EE;
+    }
+
+    .intake-step-indicator.completed .step-num {
+      background: #3A6946;
+      color: #FAF7EE;
+    }
+
+    .intake-step-divider {
+      width: 18px;
+      height: 1px;
+      background: rgba(44, 24, 16, 0.12);
+    }
+
+    
+    .intake-stage-panoramic {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .intake-panoramic-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.08fr;
+      gap: clamp(1.25rem, 2.5vw, 2.25rem);
+      flex: 1;
+      min-height: 0;
+      align-items: stretch;
+      margin-bottom: clamp(0.4rem, 0.9vh, 0.75rem);
+    }
+
+    
+    .intake-col-visual {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.45rem, 0.9vh, 0.7rem);
+      height: 100%;
+      min-height: 0;
+    }
+
+    .field-group-fill {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      margin-bottom: 0;
+    }
+
+    .intake-field-group {
+      margin-bottom: 0.65rem;
+    }
+
+    .intake-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #2C1810;
+      margin-bottom: 0.35rem;
+    }
+
+    .req-star {
+      color: #97522D;
+      margin-left: 2px;
+    }
+
+    
+    .intake-dropzone {
+      position: relative;
+      border: 1.5px dashed rgba(44, 24, 16, 0.22);
+      border-radius: 14px;
+      background: #FFFFFF;
+      flex: 1;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.85rem;
+      text-align: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.18s ease, background-color 0.18s ease;
+      box-sizing: border-box;
+    }
+
+    .intake-dropzone:hover {
+      border-color: #97522D;
+      background-color: #FDFBF7;
+    }
+
+    .intake-file-hidden {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+
+    .dropzone-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .dropzone-icon-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(151, 82, 45, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #97522D;
+      margin-bottom: 0.15rem;
+    }
+
+    .dropzone-text {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #2C1810;
+    }
+
+    .dropzone-subtext {
+      font-size: 0.72rem;
+      color: #6F5E53;
+    }
+
+    .intake-sample-btn {
+      margin-top: 0.35rem;
+      font-family: inherit;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #97522D;
+      background: rgba(151, 82, 45, 0.08);
+      border: 1px solid rgba(151, 82, 45, 0.25);
+      border-radius: 5px;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+      position: relative;
+      z-index: 3;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .intake-sample-btn:hover {
+      background: rgba(151, 82, 45, 0.15);
+      border-color: #97522D;
+    }
+
+    
+    .dropzone-preview-cover {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .dropzone-preview-cover img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .preview-actions-bar {
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(to top, rgba(44, 24, 16, 0.9) 0%, rgba(44, 24, 16, 0.55) 70%, transparent 100%);
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .preview-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #FAF7EE;
+      background: rgba(58, 105, 70, 0.88);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    .preview-btn-change {
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #FCD59A;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    
+    .intake-extra-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      height: 64px;
+      flex-shrink: 0;
+    }
+
+    .extra-file-slot {
+      position: relative;
+      border: 1px dashed rgba(44, 24, 16, 0.2);
+      border-radius: 10px;
+      background: #FFFFFF;
+      padding: 0.35rem 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+      box-sizing: border-box;
+      height: 100%;
+    }
+
+    .extra-file-slot:hover {
+      border-color: #97522D;
+      background-color: #FDFBF7;
+    }
+
+    .slot-empty-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: #2C1810;
+      font-weight: 600;
+    }
+
+    .slot-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #2C1810;
+      white-space: nowrap;
+    }
+
+    .slot-quick-btn {
+      font-family: inherit;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #97522D;
+      background: rgba(151, 82, 45, 0.08);
+      border: 1px solid rgba(151, 82, 45, 0.25);
+      border-radius: 4px;
+      padding: 0.18rem 0.45rem;
+      cursor: pointer;
+      position: relative;
+      z-index: 3;
+      white-space: nowrap;
+    }
+
+    .slot-video-preview {
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
+      background: #000;
+      object-fit: cover;
+    }
+
+    .slot-img-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    
+    .intake-col-form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(0.5rem, 1.2vh, 0.95rem);
+      height: 100%;
+    }
+
+    .intake-input-action-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      border: 1px solid rgba(44, 24, 16, 0.16);
+      border-radius: 10px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 1px 2px rgba(44, 24, 16, 0.03);
+    }
+
+    .intake-input-action-wrapper:hover {
+      border-color: rgba(151, 82, 45, 0.35);
+    }
+
+    .intake-input-action-wrapper:focus-within {
+      border-color: #97522D;
+      box-shadow: 0 0 0 3px rgba(151, 82, 45, 0.14), 0 1px 2px rgba(44, 24, 16, 0.03);
+    }
+
+    .input-icon-box {
+      padding-left: 0.85rem;
+      display: flex;
+      align-items: center;
+      color: #97522D;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .intake-input {
+      flex: 1;
+      width: 100%;
+      height: 44px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: #2C1810;
+      background: transparent;
+      border: none;
+      padding: 0 0.85rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .intake-input::placeholder {
+      color: rgba(44, 24, 16, 0.4);
+    }
+
+    .intake-action-button {
+      margin-right: 0.4rem;
+      height: 32px;
+      padding: 0 0.75rem;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #FAF7EE;
+      background: #2C1810;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .intake-action-button:hover {
+      background: #97522D;
+      transform: translateY(-1px);
+    }
+
+    .intake-gps-chip {
+      margin-top: 0.4rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #3A6946;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(58, 105, 70, 0.08);
+      border: 1px solid rgba(58, 105, 70, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      width: fit-content;
+      transition-property: background-color, transform;
+      transition-duration: 150ms;
+    }
+
+    .intake-gps-chip:hover {
+      background: rgba(58, 105, 70, 0.16);
+      transform: translateY(-1px);
+    }
+
+    
+    .intake-select-wrapper {
+      position: relative;
+      background: #FFFFFF;
+      border: 1px solid rgba(44, 24, 16, 0.16);
+      border-radius: 10px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 1px 2px rgba(44, 24, 16, 0.03);
+    }
+
+    .intake-select-wrapper:hover {
+      border-color: rgba(151, 82, 45, 0.35);
+    }
+
+    .intake-select-wrapper:focus-within {
+      border-color: #97522D;
+      box-shadow: 0 0 0 3px rgba(151, 82, 45, 0.14), 0 1px 2px rgba(44, 24, 16, 0.03);
+    }
+
+    .intake-select {
+      width: 100%;
+      height: 44px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: #2C1810;
+      background: transparent;
+      border: none;
+      padding: 0 2.2rem 0 0.85rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+    }
+
+    .select-chevron {
+      position: absolute;
+      right: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #6F5E53;
+    }
+
+    
+    .label-row-optional {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.35rem;
+    }
+
+    .optional-tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #6F5E53;
+      background: rgba(44, 24, 16, 0.05);
+      border: 1px solid rgba(44, 24, 16, 0.1);
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .intake-textarea-wrapper {
+      position: relative;
+      background: #FFFFFF;
+      border: 1px solid rgba(44, 24, 16, 0.16);
+      border-radius: 10px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 1px 2px rgba(44, 24, 16, 0.03);
+    }
+
+    .intake-textarea-wrapper:hover {
+      border-color: rgba(151, 82, 45, 0.35);
+    }
+
+    .intake-textarea-wrapper:focus-within {
+      border-color: #97522D;
+      box-shadow: 0 0 0 3px rgba(151, 82, 45, 0.14), 0 1px 2px rgba(44, 24, 16, 0.03);
+    }
+
+    .intake-textarea {
+      width: 100%;
+      height: 58px;
+      min-height: 52px;
+      max-height: 72px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: #2C1810;
+      background: transparent;
+      border: none;
+      padding: 0.55rem 0.85rem;
+      outline: none;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    .intake-textarea::placeholder {
+      color: rgba(44, 24, 16, 0.4);
+    }
+
+    
+    .intake-col-summary-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .live-recap-box {
+      background: #FFFFFF;
+      border: 1px solid rgba(44, 24, 16, 0.12);
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 4px 16px rgba(44, 24, 16, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      height: 100%;
+      box-sizing: border-box;
+      justify-content: space-between;
+      min-height: 0;
+    }
+
+    .live-recap-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .live-recap-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #97522D;
+    }
+
+    .live-recap-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      background: rgba(151, 82, 45, 0.1);
+      color: #97522D;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .live-recap-media {
+      flex: 1;
+      min-height: 120px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .live-recap-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .live-recap-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid rgba(44, 24, 16, 0.08);
+      font-size: 0.75rem;
+    }
+
+    .recap-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .recap-label {
+      color: #6F5E53;
+    }
+
+    .recap-val {
+      font-weight: 700;
+      color: #2C1810;
+      text-align: right;
+    }
+
+    
+    .intake-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .privacy-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 0.35rem;
+    }
+
+    .privacy-card {
+      border: 1.5px solid rgba(44, 24, 16, 0.12);
+      border-radius: 12px;
+      background: #FFFFFF;
+      padding: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    .privacy-card:hover {
+      border-color: rgba(151, 82, 45, 0.45);
+      background-color: #FDFBF7;
+    }
+
+    .privacy-card.active {
+      border-color: #97522D;
+      background-color: rgba(151, 82, 45, 0.04);
+      box-shadow: 0 0 0 1px #97522D, 0 4px 12px rgba(151, 82, 45, 0.06);
+    }
+
+    .privacy-radio-indicator {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(44, 24, 16, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: border-color 0.18s ease;
+    }
+
+    .privacy-card.active .privacy-radio-indicator {
+      border-color: #97522D;
+    }
+
+    .radio-inner-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #97522D;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .privacy-card.active .radio-inner-dot {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .privacy-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .privacy-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #2C1810;
+      margin-bottom: 0.15rem;
+    }
+
+    .privacy-desc {
+      font-size: 0.7rem;
+      line-height: 1.35;
+      color: #6F5E53;
+    }
+
+    
+    .intake-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: clamp(0.5rem, 1vh, 0.85rem);
+      border-top: 1px solid rgba(44, 24, 16, 0.08);
+      flex-shrink: 0;
+    }
+
+    .intake-hint-text {
+      font-size: 0.74rem;
+      color: #6F5E53;
+      font-weight: 500;
+    }
+
+    .btn-intake-primary {
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.65rem 1.4rem;
+      border-radius: 8px;
+      border: none;
+      background: #2C1810;
+      color: #FAF7EE;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      box-shadow: 0 2px 8px rgba(44, 24, 16, 0.15);
+      transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-intake-primary:hover:not(:disabled) {
+      background: #97522D;
+      box-shadow: 0 4px 14px rgba(151, 82, 45, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .btn-intake-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-intake-ghost {
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid rgba(44, 24, 16, 0.2);
+      color: #2C1810;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-intake-ghost:hover {
+      background: rgba(44, 24, 16, 0.05);
+    }
+
+    .btn-intake-emergency {
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      padding: 0.65rem 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #7D3F1E;
+      background: #97522D;
+      color: #FAF7EE;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      box-shadow: 0 4px 14px rgba(151, 82, 45, 0.25);
+      transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-intake-emergency:hover {
+      background: #7D3F1E;
+      box-shadow: 0 6px 18px rgba(151, 82, 45, 0.35);
+      transform: translateY(-1px);
+    }
+
+    
+    .intake-success-box {
+      text-align: center;
+      padding: clamp(1rem, 2vh, 1.85rem) 1rem;
+      animation: fadeInContent 0.3s ease-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .success-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(58, 105, 70, 0.12);
+      color: #3A6946;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.85rem;
+    }
+
+    .success-folio {
+      font-family: monospace;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #97522D;
+      background: rgba(151, 82, 45, 0.08);
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid rgba(151, 82, 45, 0.2);
+      margin-bottom: 1rem;
+    }
+
+    .success-summary-recap {
+      background: #FFFFFF;
+      border: 1px solid rgba(44, 24, 16, 0.12);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: left;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: #2C1810;
+      margin-bottom: 1.25rem;
+      max-width: 600px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    
+    .intake-intro-overlay {
+      position: absolute;
+      inset: 0;
+      background: #FAF7EE;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: clamp(1rem, 2.4vh, 1.85rem) clamp(1.25rem, 3vw, 2.5rem);
+      box-sizing: border-box;
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                  transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  visibility 0.3s;
+      border-radius: 20px;
+    }
+
+    .intake-intro-overlay.dismissed {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.96);
+      pointer-events: none;
+    }
+
+    .intro-overlay-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.5rem;
+      border-bottom: 1px solid rgba(44, 24, 16, 0.08);
+      padding-bottom: clamp(0.45rem, 1vh, 0.75rem);
+      flex-shrink: 0;
+    }
+
+    .intro-header-main {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .intro-title {
+      font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: #2C1810;
+      margin: 0.15rem 0 0;
+    }
+
+    .intro-subtitle {
+      font-size: clamp(0.78rem, 1.4vh, 0.88rem);
+      color: #6F5E53;
+      margin: 0;
+    }
+
+    .intro-close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #FFFFFF;
+      border: 1px solid rgba(44, 24, 16, 0.14);
+      color: #6F5E53;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .intro-close-btn:hover {
+      background: rgba(151, 82, 45, 0.08);
+      color: #97522D;
+      border-color: #97522D;
+    }
+
+    
+    .intro-steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(0.6rem, 1.3vw, 1rem);
+      margin: clamp(0.6rem, 1.5vh, 1.25rem) 0;
+      flex: 1;
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .intro-step-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(44, 24, 16, 0.1);
+      border-radius: 12px;
+      padding: clamp(0.75rem, 1.8vh, 1.1rem);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(44, 24, 16, 0.03);
+      box-sizing: border-box;
+      transition: border-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .intro-step-card:hover {
+      border-color: rgba(151, 82, 45, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .intro-step-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.45rem;
+    }
+
+    .intro-step-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #97522D;
+      background: rgba(151, 82, 45, 0.08);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .intro-step-icon {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .intro-step-title {
+      font-size: clamp(0.82rem, 1.6vh, 0.95rem);
+      font-weight: 700;
+      color: #2C1810;
+      margin: 0 0 0.4rem;
+      line-height: 1.25;
+    }
+
+    .intro-step-desc {
+      font-size: clamp(0.72rem, 1.35vh, 0.78rem);
+      color: #6F5E53;
+      line-height: 1.45;
+      margin: 0;
+      flex: 1;
+    }
+
+    .intro-step-desc strong {
+      color: #2C1810;
+      font-weight: 600;
+    }
+
+    
+    .intro-overlay-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: clamp(0.45rem, 1vh, 0.75rem);
+      border-top: 1px solid rgba(44, 24, 16, 0.08);
+      flex-shrink: 0;
+    }
+
+    .intro-footer-note {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #3A6946;
+    }
+
+    .btn-intro-start {
+      min-width: 250px;
+    }
+
+    .btn-guide-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #97522D;
+      background: rgba(151, 82, 45, 0.08);
+      border: 1px solid rgba(151, 82, 45, 0.2);
+      border-radius: 9999px;
+      padding: 0.25rem 0.65rem;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-guide-pill:hover {
+      background: rgba(151, 82, 45, 0.14);
+      border-color: #97522D;
+      transform: translateY(-1px);
+    }
+
+    
+    @media (max-width: 900px) {
+      .rescue-intake-section {
+        height: auto;
+        min-height: 100vh;
+        max-height: none;
+        padding: 2.5rem 1.25rem 0 1.25rem;
+        overflow: visible;
+      }
+
+      .intake-card {
+        height: auto;
+        max-height: none;
+        padding: 1.5rem;
+        overflow: visible;
+        margin-bottom: 2rem;
+      }
+
+      .intake-intro-overlay {
+        position: relative;
+        inset: auto;
+        min-height: auto;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .intake-intro-overlay.dismissed {
+        display: none;
+      }
+
+      .intro-steps-grid {
+        grid-template-columns: 1fr 1fr;
+        overflow-y: visible;
+      }
+
+      .intro-overlay-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+
+      .btn-intro-start {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .intake-header-panoramic {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.85rem;
+      }
+
+      .intake-panoramic-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .intake-extra-strip {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .extra-file-slot {
+        min-height: 52px;
+      }
+
+      .intake-dropzone {
+        min-height: 180px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .intro-steps-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .intake-grid-2,
+      .privacy-cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .intake-stepper-bar {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    
+    .gps-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background-color: rgba(44, 24, 16, 0.68);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(0.75rem, 2vw, 1.5rem);
+      opacity: 0;
+      pointer-events: none;
+      transition-property: opacity;
+      transition-duration: 250ms;
+      transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gps-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .gps-modal-card {
+      position: relative;
+      background-color: #FAF7EF;
+      border: 1px solid rgba(151, 82, 45, 0.24);
+      box-shadow: 0 28px 70px rgba(44, 24, 16, 0.38);
+      border-radius: 18px;
+      max-width: 740px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.96) translateY(12px);
+      transition-property: transform;
+      transition-duration: 260ms;
+      transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gps-modal-backdrop.open .gps-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .gps-modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 1.15rem 1.4rem 0.95rem 1.4rem;
+      border-bottom: 1px solid rgba(44, 24, 16, 0.08);
+      background: #FAF7EF;
+      flex-shrink: 0;
+    }
+
+    .gps-modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #2C1810;
+      margin-bottom: 0.2rem;
+      letter-spacing: -0.01em;
+    }
+
+    .gps-modal-subtitle {
+      font-size: 0.82rem;
+      color: #6B5E55;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .gps-close-btn {
+      background: transparent;
+      border: none;
+      color: #2C1810;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.65;
+      transition-property: opacity, background-color;
+      transition-duration: 150ms;
+      flex-shrink: 0;
+    }
+
+    .gps-close-btn:hover {
+      opacity: 1;
+      background: rgba(44, 24, 16, 0.08);
+    }
+
+    .gps-map-frame {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      background: #EDE8D0;
+      overflow: hidden;
+    }
+
+    @media (max-width: 640px) {
+      .gps-map-frame {
+        height: 290px;
+      }
+    }
+
+    .gps-map-canvas {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    
+    .gps-map-frame .leaflet-control-zoom {
+      border: 1px solid rgba(44, 24, 16, 0.18) !important;
+      border-radius: 8px !important;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(44, 24, 16, 0.12) !important;
+    }
+
+    .gps-map-frame .leaflet-control-zoom a {
+      background-color: #FAF7EF !important;
+      color: #2C1810 !important;
+      border-bottom: 1px solid rgba(44, 24, 16, 0.1) !important;
+      width: 32px !important;
+      height: 32px !important;
+      line-height: 32px !important;
+      font-size: 15px !important;
+      transition-property: background-color;
+      transition-duration: 150ms;
+    }
+
+    .gps-map-frame .leaflet-control-zoom a:hover {
+      background-color: #EDE8D0 !important;
+      color: #97522D !important;
+    }
+
+    
+    .gps-recenter-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.75rem;
+      background: #FAF7EF;
+      color: #2C1810;
+      border: 1px solid rgba(151, 82, 45, 0.28);
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(44, 24, 16, 0.14);
+      cursor: pointer;
+      transition-property: background-color, transform;
+      transition-duration: 160ms;
+      font-family: inherit;
+    }
+
+    .gps-recenter-btn:hover {
+      background: #FFFFFF;
+      transform: translateY(-1px);
+    }
+
+    .gps-drag-hint {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      background: rgba(44, 24, 16, 0.88);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      color: #FAF7EF;
+      font-size: 0.73rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    
+    .custom-gps-leaflet-pin {
+      position: relative;
+      width: 34px;
+      height: 44px;
+      cursor: grab;
+    }
+
+    .custom-gps-leaflet-pin:active {
+      cursor: grabbing;
+    }
+
+    .gps-pin-marker-pulse {
+      position: absolute;
+      bottom: 0px;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(151, 82, 45, 0.35);
+      animation: gpsPinPulseAnim 2s infinite ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes gpsPinPulseAnim {
+      0% {
+        transform: translate(-50%, 50%) scale(0.4);
+        opacity: 0.95;
+      }
+      100% {
+        transform: translate(-50%, 50%) scale(2.4);
+        opacity: 0;
+      }
+    }
+
+    .gps-pin-marker-body {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 4px 8px rgba(44, 24, 16, 0.38));
+      transition-property: transform;
+      transition-duration: 150ms;
+    }
+
+    .custom-gps-leaflet-pin:hover .gps-pin-marker-body {
+      transform: translateY(-2px);
+    }
+
+    .gps-modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.95rem 1.4rem;
+      background: #F5EFE0;
+      border-top: 1px solid rgba(44, 24, 16, 0.08);
+      flex-shrink: 0;
+    }
+
+    .gps-coord-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 0.18rem;
+      min-width: 0;
+    }
+
+    .gps-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #97522D;
+    }
+
+    .gps-address-hint {
+      font-size: 0.76rem;
+      color: #6B5E55;
+      max-width: 360px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .gps-modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-shrink: 0;
+    }
+
+    .gps-btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(44, 24, 16, 0.22);
+      color: #2C1810;
+      padding: 0.52rem 0.95rem;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition-property: background-color;
+      transition-duration: 150ms;
+    }
+
+    .gps-btn-secondary:hover {
+      background: rgba(44, 24, 16, 0.06);
+    }
+
+    .gps-btn-primary {
+      background: #97522D;
+      border: 1px solid transparent;
+      color: #FAF7EF;
+      padding: 0.52rem 1.25rem;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 2px 6px rgba(151, 82, 45, 0.25);
+      transition-property: background-color, transform;
+      transition-duration: 150ms;
+    }
+
+    .gps-btn-primary:hover {
+      background: #824524;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 640px) {
+      .gps-modal-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .gps-modal-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    
+    .site-footer {
+      background-color: #1F1109;
+      color: #FAF7EF;
+      border-top: 1px solid rgba(250, 247, 239, 0.12);
+      padding: clamp(3rem, 6vh, 4.5rem) clamp(1.25rem, 4vw, 3.5rem) clamp(1.75rem, 3vh, 2.5rem);
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .site-footer-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .footer-main-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.1fr 1.3fr 1.2fr;
+      gap: clamp(2rem, 3.5vw, 3.5rem);
+      margin-bottom: clamp(2.5rem, 4.5vh, 3.5rem);
+    }
+
+    @media (max-width: 1024px) {
+      .footer-main-grid {
+        grid-template-columns: 1.5fr 1fr 1fr;
+      }
+      .footer-col-ethical {
+        grid-column: span 3;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .footer-main-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+      .footer-col-brand {
+        grid-column: span 2;
+      }
+      .footer-col-ethical {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .footer-main-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .footer-col-brand,
+      .footer-col-ethical {
+        grid-column: span 1;
+      }
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-brand-title {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 1.28rem;
+      font-weight: 800;
+      color: #FAF7EF;
+      letter-spacing: -0.02em;
+    }
+
+    .footer-brand-tagline {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #C49A7A;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    .footer-brand-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .footer-brand-desc {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: rgba(250, 247, 239, 0.72);
+      margin: 0.85rem 0 0 0;
+      max-width: 380px;
+    }
+
+    .footer-location-tag {
+      margin-top: 1.1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #C49A7A;
+    }
+
+    .footer-col-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #FAF7EF;
+      margin: 0 0 1.15rem 0;
+      opacity: 0.95;
+    }
+
+    .footer-nav-list,
+    .footer-info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .footer-link {
+      color: rgba(250, 247, 239, 0.68);
+      font-size: 0.86rem;
+      text-decoration: none;
+      display: inline-block;
+      transition-property: color, transform;
+      transition-duration: 150ms;
+      cursor: pointer;
+    }
+
+    .footer-link:hover {
+      color: #E29B63;
+      transform: translateX(2px);
+    }
+
+    .footer-info-list li {
+      font-size: 0.84rem;
+      color: rgba(250, 247, 239, 0.68);
+      line-height: 1.5;
+    }
+
+    .footer-info-list strong {
+      display: block;
+      color: #FAF7EF;
+      font-weight: 600;
+      font-size: 0.86rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .footer-text-muted {
+      font-size: 0.84rem;
+      color: rgba(250, 247, 239, 0.68);
+      line-height: 1.6;
+      margin: 0 0 1rem 0;
+    }
+
+    .footer-pledge-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.4rem 0.8rem;
+      background: rgba(151, 82, 45, 0.25);
+      border: 1px solid rgba(196, 154, 122, 0.35);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #E29B63;
+      letter-spacing: 0.02em;
+      width: fit-content;
+    }
+
+    .footer-bottom-bar {
+      padding-top: 1.75rem;
+      border-top: 1px solid rgba(250, 247, 239, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-copy {
+      font-size: 0.8rem;
+      color: rgba(250, 247, 239, 0.5);
+      line-height: 1.5;
+    }
+
+    .footer-status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #78B087;
+    }
+
+    .status-pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4E8752;
+      box-shadow: 0 0 8px rgba(78, 135, 82, 0.6);
+    }
+
+    
+    .rescue-intake-section .site-footer {
+      width: 100vw;
+      margin-left: calc(-1 * clamp(1rem, 2.5vw, 2.5rem));
+      margin-right: calc(-1 * clamp(1rem, 2.5vw, 2.5rem));
+      padding: clamp(0.5rem, 1vh, 0.85rem) clamp(1.25rem, 3.5vw, 3rem) clamp(0.4rem, 0.8vh, 0.65rem);
+      flex-shrink: 0;
+      z-index: 5;
+    }
+
+    .rescue-intake-section .footer-main-grid {
+      margin-bottom: clamp(0.35rem, 0.7vh, 0.55rem);
+      gap: clamp(1rem, 2vw, 2.5rem);
+      grid-template-columns: 1.5fr 1fr 1.2fr 1.2fr;
+    }
+
+    .rescue-intake-section .footer-brand-title {
+      font-size: 1.05rem;
+    }
+
+    .rescue-intake-section .footer-brand-desc {
+      font-size: 0.76rem;
+      line-height: 1.35;
+      margin: 0.25rem 0 0 0;
+      max-width: 320px;
+    }
+
+    .rescue-intake-section .footer-location-tag {
+      margin-top: 0.35rem;
+      font-size: 0.72rem;
+    }
+
+    .rescue-intake-section .footer-col-title {
+      font-size: 0.7rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .rescue-intake-section .footer-nav-list,
+    .rescue-intake-section .footer-info-list {
+      gap: 0.25rem;
+    }
+
+    .rescue-intake-section .footer-link {
+      font-size: 0.76rem;
+    }
+
+    .rescue-intake-section .footer-info-list li {
+      font-size: 0.74rem;
+      line-height: 1.3;
+    }
+
+    .rescue-intake-section .footer-info-list strong {
+      font-size: 0.76rem;
+      margin-bottom: 0.05rem;
+    }
+
+    .rescue-intake-section .footer-text-muted {
+      font-size: 0.74rem;
+      line-height: 1.35;
+      margin-bottom: 0.35rem;
+    }
+
+    .rescue-intake-section .footer-pledge-badge {
+      padding: 0.2rem 0.5rem;
+      font-size: 0.68rem;
+    }
+
+    .rescue-intake-section .footer-bottom-bar {
+      padding-top: 0.4rem;
+    }
+
+    .rescue-intake-section .footer-copy {
+      font-size: 0.7rem;
+    }
+
+    .rescue-intake-section .footer-status-indicator {
+      font-size: 0.7rem;
+    }
+
+    @media (max-width: 900px) {
+      .rescue-intake-section .site-footer {
+        width: calc(100% + 2.5rem);
+        margin-left: -1.25rem;
+        margin-right: -1.25rem;
+        padding: 2.25rem 1.25rem 1.75rem 1.25rem;
+      }
+      .rescue-intake-section .footer-main-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.75rem;
+        margin-bottom: 1.75rem;
+      }
+      .rescue-intake-section .footer-brand-title {
+        font-size: 1.2rem;
+      }
+      .rescue-intake-section .footer-brand-desc {
+        font-size: 0.85rem;
+        line-height: 1.5;
+        max-width: none;
+      }
+      .rescue-intake-section .footer-link {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  
+  <div class="home-view-wrapper app-view" id="viewHome">
+    <div class="scroll-experience-wrapper" id="scrollWrapper">
+      <div class="sticky-viewport-stage" id="stickyStage">
+
+      <div class="stage-ambient-glow"></div>
+
+      
+      <div class="hero-scrim" id="heroScrim"></div>
+      <div class="hero-text-overlay" id="heroTextOverlay">
+        <div class="hero-content">
+          <h1 class="hero-title">No buscan un techo.<br>Te están buscando a ti.</h1>
+          <p class="hero-subtitle">
+            A veces el rescate empieza cuando él corre hacia ti sin dudarlo. Dale un hogar definitivo a quien ya te eligió desde el primer segundo.
+          </p>
+        </div>
+      </div>
+
+      
+      <button class="scroll-indicator" id="scrollDownBtn" aria-label="Desplazar hacia las mascotas rescatadas">
+        <svg class="scroll-arrow-svg" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v16M19 13l-7 7-7-7"/>
+        </svg>
+      </button>
+
+      
+      <div class="hero-transition-unit" id="heroTransitionUnit">
+        <video id="videoA" muted playsinline autoplay preload="auto" class="hero-transition-video" style="opacity: 1; z-index: 2;">
+          <source src="assets/hero-dog-director-cut.mp4" type="video/mp4" />
+        </video>
+        <video id="videoB" muted playsinline preload="auto" class="hero-transition-video" style="opacity: 0; z-index: 1;">
+          <source src="assets/hero-dog-director-cut.mp4" type="video/mp4" />
+        </video>
+        <div class="slot-caption" id="heroCaption" style="opacity: 0;">
+          <div class="slot-caption-title">Negrito</div>
+          <div class="slot-caption-loc">Estación de Servicio El Trébol</div>
+        </div>
+      </div>
+
+      
+      <aside class="carousel-info-panel" id="carouselInfoPanel">
+        <div class="panel-header-row">
+          <div class="panel-header-left">
+            <span class="panel-index-counter" id="panelIndexCounter">01 / 06</span>
+            <span class="panel-tagline">Mascotas en adopción</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <a href="reporte.html" class="ver-mas-link" id="goToReportBtn" style="background: rgba(252, 213, 154, 0.12); border-color: rgba(252, 213, 154, 0.35);">+ Reportar</a>
+            <a href="catalogo.html" class="ver-mas-link" id="goToCatalogBtn">Ver catálogo</a>
+          </div>
+        </div>
+
+        <h2 class="panel-pet-name" id="panelPetName">Negrito</h2>
+        <p class="panel-pet-story" id="panelPetStory">
+          Llegó tímidamente a la puerta del vehículo tras semanas desamparado cerca de las bombas de servicio. Es de temperamento tranquilo, sumamente noble, dócil y protector.
+        </p>
+
+        <div class="panel-address-box">
+          <svg class="panel-address-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <div class="panel-address-text" id="panelPetAddress">
+            Estación de Servicio El Trébol, Av. Independencia, Coro, Falcón
+          </div>
+        </div>
+
+        <div class="panel-actions-group">
+          <button class="panel-expand-btn" id="panelExpandBtn">Ver ficha completa</button>
+          <button class="nav-arrow-btn" id="stepPrevBtn" aria-label="Mascota anterior">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="nav-arrow-btn" id="stepNextBtn" aria-label="Mascota siguiente">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+      </aside>
+
+      
+      <div class="wheel-stage-wrapper">
+        <div class="wheel-drum-rig" id="wheelDrumRig">
+          <div class="wheel-orbit-track" id="wheelOrbitTrack"></div>
+          <div class="wheel-focal-gate"></div>
+          <div class="wheel-core"></div>
+          <div class="wheel-rotor" id="wheelRotor"></div>
+        </div>
+      </div>
+
+    </div> 
+  </div> 
+
+  
+  <section class="rescue-intake-section" id="rescueIntakeSection">
+    <div class="intake-ambient-glow"></div>
+
+    <div class="intake-card" id="intakeCard">
+      
+      <div class="intake-intro-overlay" id="intakeIntroOverlay">
+        <div class="intro-overlay-header">
+          <div class="intro-header-main">
+            <div class="intake-eyebrow-row">
+              <span class="intake-eyebrow-badge">Protocolo Ciudadano de Reporte</span>
+            </div>
+            <h2 class="intro-title">¿Encontraste una mascota en la calle?</h2>
+            <p class="intro-subtitle">Guía rápida de 4 pasos de lo que te pediremos en este formulario y el porqué de cada dato:</p>
+          </div>
+          <button type="button" class="intro-close-btn" id="inlineCloseGuideBtn" aria-label="Cerrar instrucciones" title="Cerrar guía">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        
+        <div class="intro-steps-grid">
+          
+          <div class="intro-step-card">
+            <div class="intro-step-top">
+              <span class="intro-step-badge">Paso 01</span>
+              <span class="intro-step-icon">📸</span>
+            </div>
+            <h3 class="intro-step-title">1. Foto de la mascota</h3>
+            <p class="intro-step-desc">
+              <strong>Qué se pide:</strong> Subir una foto clara del animal recién localizado.<br>
+              <strong>Por qué:</strong> Es indispensable para reconocer su aspecto físico y cotejarlo con búsquedas comunitarias de extravío.
+            </p>
+          </div>
+
+          
+          <div class="intro-step-card">
+            <div class="intro-step-top">
+              <span class="intro-step-badge">Paso 02</span>
+              <span class="intro-step-icon">🩺</span>
+            </div>
+            <h3 class="intro-step-title">2. Verificar dolor o heridas</h3>
+            <p class="intro-step-desc">
+              <strong>Qué se pide:</strong> Observar a distancia si notas dolor agudo, cojera o lesiones.<br>
+              <strong>Por qué:</strong> Ayuda a los rescatistas a evaluar el nivel de urgencia y saber cómo aproximarse sin asustarlo.
+            </p>
+          </div>
+
+          
+          <div class="intro-step-card">
+            <div class="intro-step-top">
+              <span class="intro-step-badge">Paso 03</span>
+              <span class="intro-step-icon">📍</span>
+            </div>
+            <h3 class="intro-step-title">3. Ubicación y salud</h3>
+            <p class="intro-step-desc">
+              <strong>Qué se pide:</strong> Indicar la dirección (o fijar GPS) y seleccionar la salud aparente.<br>
+              <strong>Por qué:</strong> Permite que la brigada médica llegue al punto exacto con jaula de rescate, suero y medicamentos listos.
+            </p>
+          </div>
+
+          
+          <div class="intro-step-card">
+            <div class="intro-step-top">
+              <span class="intro-step-badge">Paso 04</span>
+              <span class="intro-step-icon">🤝</span>
+            </div>
+            <h3 class="intro-step-title">4. Datos y privacidad</h3>
+            <p class="intro-step-desc">
+              <strong>Qué se pide:</strong> Nombre, teléfono y si deseas hacerlo público o privado.<br>
+              <strong>Por qué:</strong> Para contactarte; si lo haces público, los vecinos y adoptantes podrán comunicarse directamente contigo.
+            </p>
+          </div>
+        </div>
+
+        
+        <div class="intro-overlay-footer">
+          <div class="intro-footer-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A6946" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Toma menos de 1 minuto · Solo 3 datos indispensables</span>
+          </div>
+          <button type="button" class="btn-intake-primary btn-intro-start" id="inlineStartReportBtn">
+            <span>Entendido, completar formulario</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      
+      <header class="intake-header-panoramic">
+        <div class="intake-header-left">
+          <div class="intake-eyebrow-row">
+            <span class="intake-eyebrow-badge">Reporte Inmediato de Rescate</span>
+            <button type="button" class="btn-guide-pill" id="inlineReopenGuideBtn" title="Ver guía de instrucciones">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span>Ver instrucciones</span>
+            </button>
+          </div>
+          <h2 class="intake-title">¿Encontraste una mascota en la calle?</h2>
+        </div>
+
+        
+        <div class="intake-stepper-bar">
+          <div class="intake-step-indicator active" id="intakeStepTab1">
+            <span class="step-num" id="stepNum1">01</span>
+            <span class="step-label">Mascota & Hallazgo</span>
+          </div>
+          <div class="intake-step-divider"></div>
+          <div class="intake-step-indicator" id="intakeStepTab2">
+            <span class="step-num" id="stepNum2">02</span>
+            <span class="step-label">Reportante & Privacidad</span>
+          </div>
+        </div>
+      </header>
+
+      
+      <div id="intakeStep1Stage" class="intake-stage-panoramic">
+        <div class="intake-panoramic-grid">
+          
+          
+          <div class="intake-col-visual">
+            <div class="intake-field-group field-group-fill">
+              <label class="intake-label">Fotografía del animal <span class="req-star">*</span></label>
+              <div class="intake-dropzone" id="inlinePhotoDropzone">
+                <input type="file" id="inlinePhotoInput" accept="image/*" class="intake-file-hidden" />
+                <div class="dropzone-empty" id="inlinePhotoEmpty">
+                  <div class="dropzone-icon-circle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <div class="dropzone-text">Haz clic o arrastra la foto del animal</div>
+                  <div class="dropzone-subtext">Rostro o cuerpo entero donde se aprecie su estado</div>
+                  <button type="button" class="intake-sample-btn" id="inlineUseSamplePhotoBtn">
+                    ⚡ Usar foto de prueba
+                  </button>
+                </div>
+                <div class="dropzone-preview-cover" id="inlinePhotoPreviewWrap" style="display: none;">
+                  <img id="inlinePhotoImg" src="" alt="Previsualización de la mascota" />
+                  <div class="preview-actions-bar">
+                    <span class="preview-badge">✓ Foto cargada</span>
+                    <button type="button" class="preview-btn-change" id="inlineChangePhotoBtn">Cambiar foto</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            
+            <div class="intake-extra-strip">
+              
+              <div class="extra-file-slot" id="inlineVideoSlot">
+                <input type="file" id="inlineVideoInput" accept="video/*" class="intake-file-hidden" />
+                <div id="inlineVideoEmpty" class="slot-empty-row">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#97522D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                  <span class="slot-text">Video de marcha</span>
+                  <button type="button" class="slot-quick-btn" id="inlineSampleVideoBtn">Probar</button>
+                </div>
+                <video id="inlineVideoPreview" class="slot-video-preview" controls playsinline style="display: none;"></video>
+              </div>
+
+              
+              <div class="extra-file-slot" id="inlineEnvSlot">
+                <input type="file" id="inlineEnvInput" accept="image/*" class="intake-file-hidden" />
+                <div id="inlineEnvEmpty" class="slot-empty-row">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#97522D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span class="slot-text">Foto entorno (opcional)</span>
+                </div>
+                <img id="inlineEnvPreview" class="slot-img-preview" alt="Entorno" style="display: none;" />
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="intake-col-form">
+            
+            <div class="intake-field-group">
+              <label class="intake-label" for="inlineLocationInput">Lugar del hallazgo <span class="req-star">*</span></label>
+              <div class="intake-input-action-wrapper">
+                <div class="input-icon-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <input type="text" id="inlineLocationInput" class="intake-input" placeholder="Dirección o referencia (ej. Calle Falcón con Av. Manaure)" />
+                <button type="button" class="intake-action-button" id="inlineGpsBtn" title="Ubicar mascota en el mapa con precisión métrica">
+                  <span>📍 Fijar en mapa</span>
+                </button>
+              </div>
+              <div class="intake-gps-chip" id="inlineGpsChip" style="display: none;" title="Haz clic para reajustar la ubicación en el mapa">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span id="inlineGpsCoordsText">GPS: 11.4116° N, 69.6736° W (Fijado)</span>
+              </div>
+            </div>
+
+            
+            <div class="intake-field-group">
+              <label class="intake-label" for="inlineHealthSelect">Estado de salud aparente <span class="req-star">*</span></label>
+              <div class="intake-select-wrapper">
+                <select id="inlineHealthSelect" class="intake-select">
+                  <option value="" disabled selected>Selecciona el estado aparente...</option>
+                  <option value="Aparentemente sano / Solo desorientado">Aparentemente sano / Solo desorientado</option>
+                  <option value="Desnutrición o delgadez severa">Desnutrición o delgadez severa</option>
+                  <option value="Cojera o posible fractura en extremidad">Cojera o posible fractura en extremidad</option>
+                  <option value="Heridas abiertas o traumatismo visible">Heridas abiertas o traumatismo visible</option>
+                  <option value="Sarna, dermatitis o caída de pelaje">Sarna, dermatitis o caída de pelaje</option>
+                  <option value="Ojos con secreción, cerrados u opacos">Ojos con secreción, cerrados u opacos</option>
+                  <option value="Estado crítico / Inmóvil en vía pública">Estado crítico / Inmóvil en vía pública</option>
+                  <option value="Cachorro lactante en riesgo">Cachorro lactante en riesgo</option>
+                </select>
+                <div class="select-chevron">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+              </div>
+            </div>
+
+            
+            <div class="intake-field-group">
+              <div class="label-row-optional">
+                <label class="intake-label" for="inlineDescriptionInput">Descripción breve</label>
+                <span class="optional-tag">Opcional</span>
+              </div>
+              <div class="intake-textarea-wrapper">
+                <textarea id="inlineDescriptionInput" class="intake-textarea" rows="2" placeholder="Detalles adicionales: comportamiento, si tiene collar, color, si está asustado..."></textarea>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        
+        <footer class="intake-actions-row">
+          <div class="intake-hint-text" id="inlineStep1Hint">Completa la foto, lugar y estado de salud para avanzar</div>
+          <button type="button" class="btn-intake-primary" id="inlineNextStepBtn" disabled>
+            <span>Siguiente: Datos de contacto</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </footer>
+      </div>
+
+      
+      <div id="intakeStep2Stage" class="intake-stage-panoramic" style="display: none;">
+        <div class="intake-panoramic-grid">
+
+          
+          <div class="intake-col-summary-card">
+            <div class="live-recap-box">
+              <div class="live-recap-header">
+                <span class="live-recap-tag">Expediente de Rescate</span>
+                <span class="live-recap-badge">En curso</span>
+              </div>
+              <div class="live-recap-media">
+                <img id="inlineStep2PhotoPreview" src="assets/dog_espera.jpg" alt="Mascota a rescatar" />
+              </div>
+              <div class="live-recap-details">
+                <div class="recap-item">
+                  <span class="recap-label">Lugar fijado:</span>
+                  <span class="recap-val" id="inlineStep2LocPreview">Por definir</span>
+                </div>
+                <div class="recap-item">
+                  <span class="recap-label">Estado de salud:</span>
+                  <span class="recap-val" id="inlineStep2HealthPreview">Por definir</span>
+                </div>
+                <div class="recap-item" id="inlineStep2DescRow" style="display: none;">
+                  <span class="recap-label">Detalles:</span>
+                  <span class="recap-val" id="inlineStep2DescPreview" style="font-weight: 500; font-style: italic; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="intake-col-form">
+            <div class="intake-grid-2">
+              <div class="intake-field-group">
+                <label class="intake-label" for="inlineRepName">Nombre <span class="req-star">*</span></label>
+                <div class="intake-input-action-wrapper">
+                  <div class="input-icon-box">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <input type="text" id="inlineRepName" class="intake-input" placeholder="Tu nombre" />
+                </div>
+              </div>
+              <div class="intake-field-group">
+                <label class="intake-label" for="inlineRepLastName">Apellido <span class="req-star">*</span></label>
+                <div class="intake-input-action-wrapper">
+                  <div class="input-icon-box">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <input type="text" id="inlineRepLastName" class="intake-input" placeholder="Tu apellido" />
+                </div>
+              </div>
+            </div>
+
+            <div class="intake-field-group">
+              <label class="intake-label" for="inlineRepPhone">Número de teléfono o WhatsApp <span class="req-star">*</span></label>
+              <div class="intake-input-action-wrapper">
+                <div class="input-icon-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <input type="tel" id="inlineRepPhone" class="intake-input" placeholder="+58 412 123-4567" />
+              </div>
+            </div>
+
+            
+            <div class="intake-field-group">
+              <label class="intake-label">Privacidad de tu número de contacto</label>
+              <div class="privacy-cards-grid">
+                
+                <div class="privacy-card active" id="privCardPrivate" onclick="setInlinePrivacy('private')">
+                  <div class="privacy-radio-indicator">
+                    <div class="radio-inner-dot"></div>
+                  </div>
+                  <div class="privacy-content">
+                    <div class="privacy-title">🔒 Solo privado para el equipo</div>
+                    <div class="privacy-desc">Uso confidencial exclusivo de la brigada y veterinarios para coordinar rescate.</div>
+                  </div>
+                </div>
+
+                
+                <div class="privacy-card" id="privCardPublic" onclick="setInlinePrivacy('public')">
+                  <div class="privacy-radio-indicator">
+                    <div class="radio-inner-dot"></div>
+                  </div>
+                  <div class="privacy-content">
+                    <div class="privacy-title">📢 Hacer número público</div>
+                    <div class="privacy-desc">Permitir que la comunidad, vecinos y adoptantes te contacten directamente.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        
+        <footer class="intake-actions-row">
+          <button type="button" class="btn-intake-ghost" id="inlineBackStepBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>Volver a mascota</span>
+          </button>
+          <button type="button" class="btn-intake-emergency" id="inlineSubmitBtn">
+            <span>Enviar Reporte de Rescate</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </footer>
+      </div>
+
+      
+      <div id="intakeSuccessStage" class="intake-success-box" style="display: none;">
+        <div class="success-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 class="intake-title" style="margin-bottom: 0.35rem;">¡Reporte registrado con éxito!</h3>
+        <p class="intake-subtitle" style="margin: 0 auto 1.25rem auto;">La brigada móvil de rescate ha sido alertada con las coordenadas y detalles del animal.</p>
+        
+        <div class="success-folio" id="inlineFolioBadge">FOLIO #SAN-2026-0894</div>
+        <div class="success-summary-recap" id="inlineSummaryRecap"></div>
+
+        <button type="button" class="btn-intake-primary" id="inlineResetBtn" style="margin: 0 auto;">
+          Reportar otra mascota
+        </button>
+      </div>
+
+    </div>
+
+    
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div class="footer-main-grid">
+          
+          <div class="footer-col footer-col-brand">
+            <div class="footer-brand-title">
+              <span class="footer-brand-icon">🐾</span>
+              <span class="footer-brand-name">No Son De Raza</span>
+            </div>
+            <span class="footer-brand-tagline">El amor no tiene pedigrí</span>
+            <p class="footer-brand-desc">
+              Red comunitaria y hogar de paso para rescatar, sanar y dignificar a perritos mestizos y criollos en Coro y la costa de Falcón. Porque la fidelidad y la nobleza de una vida no dependen de una raza.
+            </p>
+            <div class="footer-location-tag">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Casco Histórico, Coro &mdash; Falcón, Venezuela</span>
+            </div>
+          </div>
+
+          
+          <div class="footer-col">
+            <h3 class="footer-col-title">Acciones directas</h3>
+            <ul class="footer-nav-list">
+              <li><a href="#rescueIntakeSection" class="footer-link footer-link-report">Reportar perrito en calle</a></li>
+              <li><a href="#catalogo" class="footer-link footer-link-catalog">Catálogo de mestizos en adopción</a></li>
+              <li><a href="#viewHome" class="footer-link footer-link-home">Historias del carrusel</a></li>
+              <li><a href="#donaciones" class="footer-link footer-link-donations">Donación de alimento y medicinas</a></li>
+            </ul>
+          </div>
+
+          
+          <div class="footer-col">
+            <h3 class="footer-col-title">Brigada y Refugio</h3>
+            <ul class="footer-info-list">
+              <li>
+                <strong>Rescate activo:</strong>
+                <span>Atención de avisos de calle con georreferenciación GPS comunitaria</span>
+              </li>
+              <li>
+                <strong>Punto de acogida:</strong>
+                <span>Sector Casco Histórico, Coro, Falcón</span>
+              </li>
+              <li>
+                <strong>Adopciones conscientes:</strong>
+                <span>Seguimiento amoroso para asegurar hogares definitivos</span>
+              </li>
+            </ul>
+          </div>
+
+          
+          <div class="footer-col footer-col-ethical">
+            <h3 class="footer-col-title">Filosofía Criolla</h3>
+            <p class="footer-text-muted">
+              Defendemos con orgullo a los perros criollos y mestizos frente al comercio de animales. Promovemos la esterilización masiva, el respeto mutuo y la certeza de que el mejor amigo jamás se elige por catálogo ni pedigrí.
+            </p>
+            <div class="footer-pledge-badge">
+              <span>Mestizos con orgullo</span>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="footer-bottom-bar">
+          <div class="footer-copy">
+            &copy; 2026 No Son De Raza (nosonderaza) &mdash; Red comunitaria de dignidad y protección animal. Sin fines de lucro.
+          </div>
+          <div class="footer-status-indicator">
+            <span class="status-pulse-dot"></span>
+            <span>Brigada comunitaria activa</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </section>
+</div> 
+
+  
+  <section class="app-view catalog-view-section" id="viewCatalogo">
+    <div class="catalog-ambient"></div>
+
+    <header class="catalog-nav">
+      <button class="catalogo-back-link" id="backToHomeBtn" aria-label="Volver a la página principal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Volver al inicio</span>
+      </button>
+      <span class="catalog-nav-brand">No Son De Raza</span>
+    </header>
+
+    <main class="catalog-main">
+      <div class="catalog-hero-header">
+        <h1 class="catalog-title">Catálogo de rescates</h1>
+        <p class="catalog-desc">
+          Perritos mestizos y criollos rescatados en Coro y la costa de Falcón que superaron la calle, recuperados y listos para entregar su lealtad a un hogar responsable.
+        </p>
+      </div>
+
+      <div class="catalog-grid" id="catalogGrid"></div>
+    </main>
+
+    
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div class="footer-main-grid">
+          <div class="footer-col footer-col-brand">
+            <div class="footer-brand-title">
+              <span class="footer-brand-icon">🐾</span>
+              <span class="footer-brand-name">No Son De Raza</span>
+            </div>
+            <span class="footer-brand-tagline">El amor no tiene pedigrí</span>
+            <p class="footer-brand-desc">
+              Red comunitaria y hogar de paso para rescatar, sanar y dignificar a perritos mestizos y criollos en Coro y la costa de Falcón. Porque la fidelidad y la nobleza de una vida no dependen de una raza.
+            </p>
+            <div class="footer-location-tag">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Casco Histórico, Coro &mdash; Falcón, Venezuela</span>
+            </div>
+          </div>
+
+          <div class="footer-col">
+            <h3 class="footer-col-title">Acciones directas</h3>
+            <ul class="footer-nav-list">
+              <li><a href="#rescueIntakeSection" class="footer-link footer-link-report">Reportar perrito en calle</a></li>
+              <li><a href="#catalogo" class="footer-link footer-link-catalog">Catálogo de mestizos en adopción</a></li>
+              <li><a href="#viewHome" class="footer-link footer-link-home">Historias del carrusel</a></li>
+              <li><a href="#donaciones" class="footer-link footer-link-donations">Donación de alimento y medicinas</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h3 class="footer-col-title">Brigada y Refugio</h3>
+            <ul class="footer-info-list">
+              <li>
+                <strong>Rescate activo:</strong>
+                <span>Atención de avisos de calle con georreferenciación GPS comunitaria</span>
+              </li>
+              <li>
+                <strong>Punto de acogida:</strong>
+                <span>Sector Casco Histórico, Coro, Falcón</span>
+              </li>
+              <li>
+                <strong>Adopciones conscientes:</strong>
+                <span>Seguimiento amoroso para asegurar hogares definitivos</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col footer-col-ethical">
+            <h3 class="footer-col-title">Filosofía Criolla</h3>
+            <p class="footer-text-muted">
+              Defendemos con orgullo a los perros criollos y mestizos frente al comercio de animales. Promovemos la esterilización masiva, el respeto mutuo y la certeza de que el mejor amigo jamás se elige por catálogo ni pedigrí.
+            </p>
+            <div class="footer-pledge-badge">
+              <span>Mestizos con orgullo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+          <div class="footer-copy">
+            &copy; 2026 No Son De Raza (nosonderaza) &mdash; Red comunitaria de dignidad y protección animal. Sin fines de lucro.
+          </div>
+          <div class="footer-status-indicator">
+            <span class="status-pulse-dot"></span>
+            <span>Brigada comunitaria activa</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  
+  <div class="paw-transition-portal" id="pawPortal" aria-hidden="true">
+    
+    <div class="paw-fade-curtain" id="pawFadeCurtain"></div>
+
+    
+    <svg class="paw-portal-svg" id="pawPortalSvg" viewBox="0 0 1024 640" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <mask id="pawApertureMask">
+          
+          <rect width="1024" height="640" fill="white" />
+          
+          <g id="pawMaskHole" fill="black">
+            <g transform="translate(-13, -86.5)">
+              
+              <ellipse cx="378" cy="278" rx="44" ry="54" transform="rotate(-26 378 278)" />
+              
+              <ellipse cx="462" cy="190" rx="46" ry="62" transform="rotate(-8 462 190)" />
+              
+              <ellipse cx="591" cy="190" rx="46" ry="62" transform="rotate(8 591 190)" />
+              
+              <ellipse cx="677" cy="278" rx="44" ry="54" transform="rotate(26 677 278)" />
+              
+              <path d="M 525,325 C 575,325 640,360 655,415 C 668,460 645,488 590,486 C 555,484 538,468 525,468 C 512,468 495,484 460,486 C 405,488 382,460 395,415 C 410,360 475,325 525,325 Z" />
+            </g>
+          </g>
+        </mask>
+      </defs>
+      <rect width="1024" height="640" fill="#97522d" mask="url(#pawApertureMask)" />
+    </svg>
+  </div>
+
+  
+  <div class="pet-modal-backdrop" id="petModal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="pet-modal">
+      <button class="modal-close-btn" id="modalCloseBtn" aria-label="Cerrar ficha">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="modal-image-wrapper">
+        <img src="" alt="" id="modalImg" class="modal-image" />
+      </div>
+
+      <div class="modal-body">
+        <h3 class="modal-pet-name" id="modalName"></h3>
+        <div class="modal-section-label">Reseña del rescate</div>
+        <p class="modal-review-text" id="modalReview"></p>
+
+        <div class="modal-address-box">
+          <svg class="modal-address-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <div class="modal-address-text" id="modalAddress"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="gps-modal-backdrop" id="gpsMapModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="gpsModalTitle">
+    <div class="gps-modal-card">
+      <div class="gps-modal-header">
+        <div class="gps-header-text">
+          <h3 class="gps-modal-title" id="gpsModalTitle">Ubicar mascota en el mapa</h3>
+          <p class="gps-modal-subtitle">Arrastra el marcador o haz clic en cualquier calle para situar el punto con máxima precisión.</p>
+        </div>
+        <button type="button" class="gps-close-btn" id="gpsModalCloseBtn" aria-label="Cerrar mapa" title="Cerrar modal de mapa">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="gps-map-frame">
+        <div id="gpsMapCanvas" class="gps-map-canvas"></div>
+        <button type="button" class="gps-recenter-btn" id="gpsRecenterBtn" title="Centrar mapa en la lectura de satélite de mi dispositivo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="2" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+          </svg>
+          <span>🎯 Mi posición GPS</span>
+        </button>
+        <div class="gps-drag-hint">Arrastra el marcador o toca la calle para fijar el punto</div>
+      </div>
+
+      <div class="gps-modal-footer">
+        <div class="gps-coord-preview">
+          <div class="gps-live-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="gpsLiveCoordsText">11.41160° N, 69.67360° W</span>
+          </div>
+          <span class="gps-address-hint" id="gpsLiveAddressText">Determinando calle cercana...</span>
+        </div>
+        <div class="gps-modal-actions">
+          <button type="button" class="gps-btn-secondary" id="gpsCancelBtn">Cancelar</button>
+          <button type="button" class="gps-btn-primary" id="gpsConfirmBtn">✓ Confirmar este punto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const vA = document.getElementById('videoA');
+    const vB = document.getElementById('videoB');
+    const FADE_WINDOW = 0.42;
+    let active = 'A';
+    let isFading = false;
+
+    vA.play().catch(console.error);
+
+    function monitorLoop() {
+      const current = active === 'A' ? vA : vB;
+      const next = active === 'A' ? vB : vA;
+
+      if (current.duration && (current.duration - current.currentTime <= FADE_WINDOW)) {
+        if (!isFading) {
+          isFading = true;
+          next.currentTime = 0;
+          next.style.zIndex = '2';
+          current.style.zIndex = '1';
+
+          next.play().then(() => {
+            next.style.opacity = '1';
+            current.style.opacity = '0';
+          }).catch(console.error);
+
+          setTimeout(() => {
+            active = active === 'A' ? 'B' : 'A';
+            isFading = false;
+          }, FADE_WINDOW * 1000);
+        }
+      }
+      requestAnimationFrame(monitorLoop);
+    }
+    requestAnimationFrame(monitorLoop);
+
+    const petsData = [
+      {
+        id: 0,
+        name: "Negrito",
+        image: "assets/dog_mirada.jpg",
+        isVideo: true,
+        review: "Llegó tímidamente a la puerta del vehículo tras semanas desamparado cerca de las bombas de servicio. Es de temperamento tranquilo, sumamente noble, dócil y protector una vez que siente que no corre peligro.",
+        address: "Estación de Servicio El Trébol, Av. Independencia, Coro, Falcón"
+      },
+      {
+        id: 1,
+        name: "Pecas",
+        image: "assets/dog_juego.jpg",
+        isVideo: false,
+        review: "Juguetón y lleno de vitalidad. A los pocos minutos de recibir alimento inició una reverencia pidiendo juego. Ya pasó su chequeo veterinario inicial y convive con gran energía.",
+        address: "Hogar de paso No Son De Raza, Sector Caujarao, Coro, Falcón"
+      },
+      {
+        id: 2,
+        name: "Apolo",
+        image: "assets/dog_carrera.jpg",
+        isVideo: false,
+        review: "Corrió hacia nosotros a campo abierto con una mirada esperanzadora. Pese a haber estado a la intemperie, no guarda temores y busca siempre el contacto con las personas.",
+        address: "Carretera Nacional Morón-Coro, km 12, Falcón"
+      },
+      {
+        id: 3,
+        name: "Luna",
+        image: "assets/dog_espera.jpg",
+        isVideo: false,
+        review: "Rescatada mientras aguardaba resguardo de la lluvia. Es paciente, silenciosa y muy cariñosa. Ideal para un hogar sereno donde pueda descansar con confianza.",
+        address: "Sector Pantano Abajo, Calle Falcón con Ampíes, Coro"
+      },
+      {
+        id: 4,
+        name: "Max",
+        image: "assets/dog_curioso.jpg",
+        isVideo: false,
+        review: "Curioso, sociable y siempre atento a su entorno. Responde con rapidez a las caricias y le agradan los paseos al aire libre.",
+        address: "Urbanización Los Médanos, Vereda 4, Coro, Falcón"
+      },
+      {
+        id: 5,
+        name: "Oreo",
+        image: "assets/dog_carbon.jpg",
+        isVideo: false,
+        review: "Con sus distintivas patas blancas y mirada noble, Oreo espera a una familia definitiva tras haber sido hallado en las adyacencias de la zona portuaria.",
+        address: "Refugio Huellitas de la Costa, La Vela de Coro, Falcón"
+      }
+    ];
+
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+
+    gsap.registerPlugin(ScrollTrigger);
+    if (typeof ScrollTrigger.clearScrollMemory === 'function') {
+      ScrollTrigger.clearScrollMemory('manual');
+    }
+
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.5,
+    });
+    lenis.scrollTo(0, { immediate: true });
+
+    window.addEventListener('pageshow', () => {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+      lenis.scrollTo(0, { immediate: true });
+    });
+
+    window.addEventListener('beforeunload', () => {
+      window.scrollTo(0, 0);
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        if (targetId && targetId !== '#') {
+          const targetEl = document.querySelector(targetId);
+          if (targetEl) {
+            e.preventDefault();
+            lenis.scrollTo(targetEl, { duration: 1.3 });
+          }
+        }
+      });
+    });
+
+    const totalSlots = petsData.length;
+    const stepAngle = 360 / totalSlots;
+    let currentIndex = 0;
+    let currentAngle = 0;
+
+    const scrollWrapper = document.getElementById('scrollWrapper');
+    const stickyStage = document.getElementById('stickyStage');
+    const wheelDrumRig = document.getElementById('wheelDrumRig');
+    const wheelRotor = document.getElementById('wheelRotor');
+    const heroTransitionUnit = document.getElementById('heroTransitionUnit');
+    const heroCaption = document.getElementById('heroCaption');
+    const heroTextOverlay = document.getElementById('heroTextOverlay');
+    const heroScrim = document.getElementById('heroScrim');
+    const scrollDownBtn = document.getElementById('scrollDownBtn');
+    const carouselInfoPanel = document.getElementById('carouselInfoPanel');
+
+    const panelPetName = document.getElementById('panelPetName');
+    const panelPetStory = document.getElementById('panelPetStory');
+    const panelPetAddress = document.getElementById('panelPetAddress');
+    const panelExpandBtn = document.getElementById('panelExpandBtn');
+    const stepPrevBtn = document.getElementById('stepPrevBtn');
+    const stepNextBtn = document.getElementById('stepNextBtn');
+    const panelIndexCounter = document.getElementById('panelIndexCounter');
+
+    let cardWidth = 280;
+    let cardHeight = 175;
+    let wheelRadius = 420;
+    let drumSize = 1000;
+    let isDocked = false;
+
+    let drumCenterX = window.innerWidth;
+    let drumCenterY = window.innerHeight / 2;
+
+    function measureGeometry() {
+      const isSmall = window.innerWidth <= 900;
+      drumSize = isSmall ? 640 : 1000;
+      wheelRadius = isSmall ? 260 : 420;
+      cardWidth = isSmall ? 220 : 280;
+      cardHeight = isSmall ? 138 : 175;
+      const stageW = stickyStage ? stickyStage.clientWidth : window.innerWidth;
+      const stageH = stickyStage ? stickyStage.clientHeight : window.innerHeight;
+      drumCenterX = isSmall ? (stageW / 2) + wheelRadius : stageW;
+      drumCenterY = isSmall ? (stageH * 0.21) : (stageH / 2);
+    }
+
+    function buildSlots() {
+      measureGeometry();
+      wheelRotor.innerHTML = '';
+      const centerOffset = drumSize / 2;
+
+      if (isDocked) {
+        const rad0 = Math.PI;
+        const posX0 = centerOffset + (wheelRadius * Math.cos(rad0)) - (cardWidth / 2);
+        const posY0 = centerOffset + (wheelRadius * Math.sin(rad0)) - (cardHeight / 2);
+        heroTransitionUnit.style.left = `${posX0}px`;
+        heroTransitionUnit.style.top = `${posY0}px`;
+        heroTransitionUnit.style.width = `${cardWidth}px`;
+        heroTransitionUnit.style.height = `${cardHeight}px`;
+        wheelRotor.appendChild(heroTransitionUnit);
+      }
+
+      petsData.forEach((pet, index) => {
+        if (index === 0) return;
+        const rad = (180 + (index * stepAngle)) * (Math.PI / 180);
+        const posX = centerOffset + (wheelRadius * Math.cos(rad)) - (cardWidth / 2);
+        const posY = centerOffset + (wheelRadius * Math.sin(rad)) - (cardHeight / 2);
+
+        const slot = document.createElement('div');
+        slot.className = `wheel-card-slot ${index === currentIndex ? 'active-slot' : ''}`;
+        slot.id = `slot_${index}`;
+        slot.style.left = `${posX}px`;
+        slot.style.top = `${posY}px`;
+        slot.style.width = `${cardWidth}px`;
+        slot.style.height = `${cardHeight}px`;
+
+        slot.innerHTML = `
+          <img src="${pet.image}" alt="${pet.name}" class="slot-thumb" loading="lazy" />
+          <div class="slot-caption">
+            <div class="slot-caption-title">${pet.name}</div>
+            <div class="slot-caption-loc">${pet.address.split(',')[0]}</div>
+          </div>
+        `;
+
+        slot.addEventListener('click', () => {
+          if (index !== currentIndex) {
+            rotateToIndex(index);
+          } else {
+            openModal(petsData[index]);
+          }
+        });
+
+        wheelRotor.appendChild(slot);
+      });
+
+      updateCardsCounterRotation(currentAngle);
+    }
+
+    function updateCardsCounterRotation(rotAngle) {
+      const slots = document.querySelectorAll('.wheel-card-slot');
+      slots.forEach(slot => {
+        slot.style.transform = `rotate(${rotAngle}deg)`;
+      });
+      if (isDocked) {
+        heroTransitionUnit.style.transform = `rotate(${rotAngle}deg)`;
+      }
+    }
+
+    const maxWheelRotation = (totalSlots - 1) * stepAngle;
+    const animState = {
+      zoom: 0,
+      wheelRot: 0
+    };
+
+    function renderFrame() {
+      measureGeometry();
+      const z = animState.zoom;
+      const targetScreenLeft = drumCenterX - wheelRadius - (cardWidth / 2);
+      const targetScreenTop = drumCenterY - (cardHeight / 2);
+
+      if (z < 1) {
+        if (isDocked) {
+          stickyStage.appendChild(heroTransitionUnit);
+          heroTransitionUnit.classList.remove('wheel-card-slot', 'active-slot');
+          isDocked = false;
+        }
+
+        const stageW = stickyStage ? stickyStage.clientWidth : window.innerWidth;
+        const stageH = stickyStage ? stickyStage.clientHeight : window.innerHeight;
+        const curLeft = targetScreenLeft * z;
+        const curTop = targetScreenTop * z;
+        const curW = stageW * (1 - z) + cardWidth * z;
+        const curH = stageH * (1 - z) + cardHeight * z;
+        const curR = 12 * z;
+
+        heroTransitionUnit.style.position = 'absolute';
+        heroTransitionUnit.style.left = z === 0 ? '0px' : `${curLeft}px`;
+        heroTransitionUnit.style.top = z === 0 ? '0px' : `${curTop}px`;
+        heroTransitionUnit.style.width = z === 0 ? '100%' : `${curW}px`;
+        heroTransitionUnit.style.height = z === 0 ? '100%' : `${curH}px`;
+        heroTransitionUnit.style.borderRadius = `${curR}px`;
+        heroTransitionUnit.style.transform = 'none';
+
+        const cardProg = Math.max(0, (z - 0.65) / 0.35);
+        if (cardProg > 0) {
+          heroCaption.style.opacity = cardProg;
+          heroTransitionUnit.style.border = `2px solid rgba(252, 213, 154, ${cardProg})`;
+          heroTransitionUnit.style.boxShadow = `0 0 ${32 * cardProg}px rgba(252, 213, 154, ${0.4 * cardProg}), 0 18px 40px rgba(40, 15, 5, ${0.35 * cardProg})`;
+        } else {
+          heroCaption.style.opacity = '0';
+          heroTransitionUnit.style.border = 'none';
+          heroTransitionUnit.style.boxShadow = 'none';
+        }
+
+        currentAngle = 0;
+        wheelRotor.style.transform = 'rotate(0deg)';
+        updateCardsCounterRotation(0);
+        if (currentIndex !== 0) {
+          updateActiveSlotDetails(0);
+        }
+      } else {
+        if (!isDocked) {
+          wheelRotor.appendChild(heroTransitionUnit);
+          heroTransitionUnit.classList.add('wheel-card-slot');
+          heroTransitionUnit.style.border = '';
+          heroTransitionUnit.style.boxShadow = '';
+          heroCaption.style.opacity = '1';
+
+          const centerOffset = drumSize / 2;
+          const rad0 = Math.PI;
+          const slot0X = centerOffset + (wheelRadius * Math.cos(rad0)) - (cardWidth / 2);
+          const slot0Y = centerOffset + (wheelRadius * Math.sin(rad0)) - (cardHeight / 2);
+
+          heroTransitionUnit.style.left = `${slot0X}px`;
+          heroTransitionUnit.style.top = `${slot0Y}px`;
+          heroTransitionUnit.style.width = `${cardWidth}px`;
+          heroTransitionUnit.style.height = `${cardHeight}px`;
+          heroTransitionUnit.style.borderRadius = '12px';
+          isDocked = true;
+        }
+
+        const rot = animState.wheelRot;
+        currentAngle = rot;
+        wheelRotor.style.transform = `rotate(${-rot}deg)`;
+        updateCardsCounterRotation(rot);
+
+        const activeIdx = Math.min(Math.max(Math.round(rot / stepAngle), 0), totalSlots - 1);
+        updateActiveSlotDetails(activeIdx);
+      }
+    }
+
+    const masterTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: scrollWrapper,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1.1,
+        invalidateOnRefresh: true,
+      }
+    });
+    window.masterTl = masterTl;
+
+    masterTl.to(heroTextOverlay, {
+      opacity: 0,
+      y: -35,
+      duration: 0.28,
+      ease: 'power2.inOut',
+    }, 0);
+
+    masterTl.to(heroScrim, {
+      opacity: 0,
+      duration: 0.22,
+      ease: 'power2.inOut',
+    }, 0);
+
+    masterTl.to(scrollDownBtn, {
+      opacity: 0,
+      y: 20,
+      pointerEvents: 'none',
+      duration: 0.16,
+      ease: 'power2.in',
+    }, 0);
+
+    masterTl.to(animState, {
+      zoom: 1,
+      duration: 0.30,
+      ease: 'power2.inOut',
+      onUpdate: renderFrame
+    }, 0);
+
+    masterTl.to(carouselInfoPanel, {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      pointerEvents: 'auto',
+      duration: 0.14,
+      ease: 'power2.out'
+    }, 0.24);
+
+    masterTl.to(animState, {
+      wheelRot: maxWheelRotation,
+      duration: 0.70,
+      ease: 'none',
+      onUpdate: renderFrame
+    }, 0.30);
+
+    function updateActiveSlotDetails(index) {
+      heroTransitionUnit.classList.toggle('active-slot', index === 0);
+      document.querySelectorAll('.wheel-card-slot').forEach((slot) => {
+        if (slot !== heroTransitionUnit) {
+          const slotIdx = parseInt(slot.id.replace('slot_', ''), 10);
+          slot.classList.toggle('active-slot', slotIdx === index);
+        }
+      });
+
+      if (panelIndexCounter) {
+        const formattedIdx = String(index + 1).padStart(2, '0');
+        const formattedTotal = String(totalSlots).padStart(2, '0');
+        const counterText = `${formattedIdx} / ${formattedTotal}`;
+        if (panelIndexCounter.textContent !== counterText) {
+          panelIndexCounter.textContent = counterText;
+          gsap.fromTo(panelIndexCounter,
+            { opacity: 0.3, y: -2 },
+            { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out', overwrite: 'auto' }
+          );
+        }
+      }
+
+      if (index === currentIndex && panelPetName.textContent === petsData[index].name) return;
+      currentIndex = index;
+      const pet = petsData[index];
+
+      gsap.killTweensOf([panelPetName, panelPetStory]);
+      panelPetName.textContent = pet.name;
+      panelPetStory.textContent = pet.review;
+      panelPetAddress.textContent = pet.address;
+
+      gsap.fromTo([panelPetName, panelPetStory],
+        { opacity: 0.25, y: 4 },
+        { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out', overwrite: 'auto' }
+      );
+    }
+
+    function rotateToIndex(targetIndex) {
+      const scrollRange = scrollWrapper.offsetHeight - window.innerHeight;
+      const targetProgress = 0.30 + (targetIndex / (totalSlots - 1)) * 0.70;
+      lenis.scrollTo(targetProgress * scrollRange, {
+        duration: 1.25,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+      });
+    }
+
+    function step(dir) {
+      const targetIndex = (currentIndex + dir + totalSlots) % totalSlots;
+      rotateToIndex(targetIndex);
+    }
+
+    stepPrevBtn.addEventListener('click', () => step(-1));
+    stepNextBtn.addEventListener('click', () => step(1));
+
+    scrollDownBtn.addEventListener('click', () => {
+      const scrollRange = scrollWrapper.offsetHeight - window.innerHeight;
+      lenis.scrollTo(0.34 * scrollRange, { duration: 1.2 });
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    stickyStage.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+      }
+    }, { passive: true });
+
+    stickyStage.addEventListener('touchend', (e) => {
+      if (e.changedTouches.length === 1) {
+        const deltaX = e.changedTouches[0].clientX - touchStartX;
+        const deltaY = e.changedTouches[0].clientY - touchStartY;
+        const deltaTime = Date.now() - touchStartTime;
+
+        if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) && deltaTime < 500) {
+          if (animState.zoom >= 0.8) {
+            if (deltaX < 0) {
+              step(1);
+            } else {
+              step(-1);
+            }
+          }
+        }
+      }
+    }, { passive: true });
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        buildSlots();
+        ScrollTrigger.refresh();
+        renderFrame();
+      }, 100);
+    });
+
+    buildSlots();
+    renderFrame();
+    window.scrollTo(0, 0);
+    lenis.scrollTo(0, { immediate: true });
+
+    const modal = document.getElementById('petModal');
+    const modalImg = document.getElementById('modalImg');
+    const modalName = document.getElementById('modalName');
+    const modalReview = document.getElementById('modalReview');
+    const modalAddress = document.getElementById('modalAddress');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+    function openModal(pet) {
+      modalImg.src = pet.image;
+      modalImg.alt = pet.name;
+      modalName.textContent = pet.name;
+      modalReview.textContent = pet.review;
+      modalAddress.textContent = pet.address;
+
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      lenis.stop();
+      modalCloseBtn.focus();
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      lenis.start();
+    }
+
+    panelExpandBtn.addEventListener('click', () => {
+      openModal(petsData[currentIndex]);
+    });
+
+    heroTransitionUnit.addEventListener('click', () => {
+      if (currentIndex === 0) {
+        openModal(petsData[0]);
+      } else {
+        rotateToIndex(0);
+      }
+    });
+
+    modalCloseBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('open')) {
+        closeModal();
+      }
+    });
+
+    let isTransitioning = false;
+    let currentRoute = 'home';
+
+    const viewHome = document.getElementById('viewHome');
+    const viewCatalogo = document.getElementById('viewCatalogo');
+    const catalogGrid = document.getElementById('catalogGrid');
+    const goToCatalogBtn = document.getElementById('goToCatalogBtn');
+    const backToHomeBtn = document.getElementById('backToHomeBtn');
+
+    const pawPortal = document.getElementById('pawPortal');
+    const pawFadeCurtain = document.getElementById('pawFadeCurtain');
+    const pawPortalSvg = document.getElementById('pawPortalSvg');
+    const pawMaskHole = document.getElementById('pawMaskHole');
+
+    if (catalogGrid && catalogGrid.children.length === 0) {
+      petsData.forEach((pet, index) => {
+        const card = document.createElement('article');
+        card.className = 'catalog-card in-view';
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.style.transitionDelay = `${(index % 3) * 80}ms`;
+
+        card.innerHTML = `
+          <div class="card-media-wrapper">
+            <img src="${pet.image}" alt="${pet.name}" class="card-media-img" loading="lazy" />
+          </div>
+          <div class="card-content">
+            <div class="card-name-row">
+              <h2 class="card-name">${pet.name}</h2>
+              <span class="card-status">En adopción</span>
+            </div>
+            <p class="card-story-snippet">${pet.review}</p>
+            <div class="card-location-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>${pet.address.split(',')[0]}</span>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => openModal(pet));
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openModal(pet);
+          }
+        });
+
+        catalogGrid.appendChild(card);
+      });
+    }
+
+    function navigateTo(targetRoute, pushToHistory = true) {
+      if (isTransitioning || targetRoute === currentRoute) return;
+      isTransitioning = true;
+
+      const incomingView = targetRoute === 'catalogo' ? viewCatalogo : viewHome;
+      const outgoingView = targetRoute === 'catalogo' ? viewHome : viewCatalogo;
+
+      pawPortal.classList.add('active');
+      gsap.killTweensOf([pawFadeCurtain, pawPortalSvg, pawMaskHole]);
+
+      const tl = gsap.timeline();
+
+      tl.set(pawFadeCurtain, { opacity: 0 });
+      tl.set(pawPortalSvg, { opacity: 0 });
+      tl.to(pawFadeCurtain, {
+        opacity: 1,
+        duration: 0.38,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          incomingView.style.display = 'block';
+          incomingView.classList.add('active-view');
+          window.scrollTo(0, 0);
+          lenis.scrollTo(0, { immediate: true });
+
+          outgoingView.style.display = 'none';
+          outgoingView.classList.remove('active-view');
+
+          gsap.set(pawMaskHole, { scale: 0.025, svgOrigin: "512 320" });
+          gsap.set(pawPortalSvg, { opacity: 1 });
+        }
+      });
+
+      tl.to(pawFadeCurtain, {
+        opacity: 0,
+        duration: 0.18,
+        ease: 'power1.out'
+      });
+
+      tl.fromTo(pawMaskHole, 
+        { scale: 0.025, svgOrigin: "512 320" },
+        {
+          scale: 75,
+          svgOrigin: "512 320",
+          duration: 1.25,
+          ease: 'power3.inOut',
+          onComplete: () => {
+            pawPortal.classList.remove('active');
+            gsap.set(pawMaskHole, { scale: 0.025, svgOrigin: "512 320" });
+            gsap.set(pawPortalSvg, { opacity: 0 });
+            gsap.set(pawFadeCurtain, { opacity: 0 });
+
+          currentRoute = targetRoute;
+          isTransitioning = false;
+
+          if (pushToHistory) {
+            const targetUrl = targetRoute === 'catalogo' ? 'catalogo.html' : 'index.html';
+            window.history.pushState({ route: targetRoute }, '', targetUrl);
+          }
+
+          lenis.resize();
+          ScrollTrigger.refresh();
+        }
+      }, '-=0.08');
+    }
+
+    document.querySelectorAll('a[href*="catalogo"], #goToCatalogBtn').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo('catalogo');
+      });
+    });
+
+    document.querySelectorAll('a[href*="index"], #backToHomeBtn').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo('home');
+      });
+    });
+
+    document.querySelectorAll('.footer-link-report').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const scrollToSection = () => {
+          const target = document.getElementById('rescueIntakeSection');
+          if (target) {
+            const rect = target.getBoundingClientRect();
+            const targetY = window.pageYOffset + rect.top;
+            if (window.lenis) lenis.scrollTo(targetY, { duration: 1 });
+            else window.scrollTo({ top: targetY, behavior: 'smooth' });
+          }
+        };
+
+        if (currentRoute !== 'home') {
+          navigateTo('home');
+          setTimeout(scrollToSection, 350);
+        } else {
+          scrollToSection();
+        }
+      });
+    });
+
+    document.querySelectorAll('.footer-link-home').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentRoute !== 'home') {
+          navigateTo('home');
+        } else {
+          if (window.lenis) lenis.scrollTo(0, { duration: 1 });
+          else window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    });
+
+    document.querySelectorAll('.footer-link-donations').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Punto de acopio permanente: Sector Casco Histórico, Coro, Falcón.\n\nInsumos prioritarios:\n• Alimento seco y húmedo para perros y gatos\n• Gasas estériles, apósitos, yodo y solución fisiológica\n• Pipetas antiparasitarias y mantas limpias');
+      });
+    });
+
+    window.addEventListener('popstate', (e) => {
+      const stateRoute = (e.state && e.state.route) 
+        ? e.state.route 
+        : (window.location.pathname.includes('catalogo') ? 'catalogo' : 'home');
+      navigateTo(stateRoute, false);
+    });
+
+    if (window.location.pathname.includes('catalogo') || window.location.hash === '#catalogo') {
+      viewHome.style.display = 'none';
+      viewHome.classList.remove('active-view');
+      viewCatalogo.style.display = 'block';
+      viewCatalogo.classList.add('active-view');
+      currentRoute = 'catalogo';
+    }
+
+    const inlineReportData = {
+      photo: '',
+      location: '',
+      gps: '',
+      lat: null,
+      lon: null,
+      health: '',
+      description: '',
+      video: '',
+      envPhoto: '',
+      repName: '',
+      repLastName: '',
+      repPhone: '',
+      privacy: 'private'
+    };
+
+    const inlinePhotoDropzone = document.getElementById('inlinePhotoDropzone');
+    const inlinePhotoInput = document.getElementById('inlinePhotoInput');
+    const inlinePhotoEmpty = document.getElementById('inlinePhotoEmpty');
+    const inlinePhotoPreviewWrap = document.getElementById('inlinePhotoPreviewWrap');
+    const inlinePhotoImg = document.getElementById('inlinePhotoImg');
+    const inlineUseSamplePhotoBtn = document.getElementById('inlineUseSamplePhotoBtn');
+    const inlineChangePhotoBtn = document.getElementById('inlineChangePhotoBtn');
+
+    const inlineLocationInput = document.getElementById('inlineLocationInput');
+    const inlineGpsBtn = document.getElementById('inlineGpsBtn');
+    const inlineGpsChip = document.getElementById('inlineGpsChip');
+    const inlineGpsCoordsText = document.getElementById('inlineGpsCoordsText');
+
+    const gpsMapModal = document.getElementById('gpsMapModal');
+    const gpsModalCloseBtn = document.getElementById('gpsModalCloseBtn');
+    const gpsCancelBtn = document.getElementById('gpsCancelBtn');
+    const gpsConfirmBtn = document.getElementById('gpsConfirmBtn');
+    const gpsRecenterBtn = document.getElementById('gpsRecenterBtn');
+    const gpsLiveCoordsText = document.getElementById('gpsLiveCoordsText');
+    const gpsLiveAddressText = document.getElementById('gpsLiveAddressText');
+
+    const inlineHealthSelect = document.getElementById('inlineHealthSelect');
+    const inlineDescriptionInput = document.getElementById('inlineDescriptionInput');
+
+    const inlineVideoSlot = document.getElementById('inlineVideoSlot');
+    const inlineVideoInput = document.getElementById('inlineVideoInput');
+    const inlineVideoEmpty = document.getElementById('inlineVideoEmpty');
+    const inlineVideoPreview = document.getElementById('inlineVideoPreview');
+    const inlineSampleVideoBtn = document.getElementById('inlineSampleVideoBtn');
+
+    const inlineEnvSlot = document.getElementById('inlineEnvSlot');
+    const inlineEnvInput = document.getElementById('inlineEnvInput');
+    const inlineEnvEmpty = document.getElementById('inlineEnvEmpty');
+    const inlineEnvPreview = document.getElementById('inlineEnvPreview');
+
+    const inlineStep1Hint = document.getElementById('inlineStep1Hint');
+    const inlineNextStepBtn = document.getElementById('inlineNextStepBtn');
+    const intakeStep1Stage = document.getElementById('intakeStep1Stage');
+    const intakeStep2Stage = document.getElementById('intakeStep2Stage');
+    const intakeStepTab1 = document.getElementById('intakeStepTab1');
+    const intakeStepTab2 = document.getElementById('intakeStepTab2');
+    const stepNum1 = document.getElementById('stepNum1');
+    const stepNum2 = document.getElementById('stepNum2');
+
+    const inlineRepName = document.getElementById('inlineRepName');
+    const inlineRepLastName = document.getElementById('inlineRepLastName');
+    const inlineRepPhone = document.getElementById('inlineRepPhone');
+    const privCardPrivate = document.getElementById('privCardPrivate');
+    const privCardPublic = document.getElementById('privCardPublic');
+    const inlineBackStepBtn = document.getElementById('inlineBackStepBtn');
+    const inlineSubmitBtn = document.getElementById('inlineSubmitBtn');
+
+    const intakeSuccessStage = document.getElementById('intakeSuccessStage');
+    const inlineFolioBadge = document.getElementById('inlineFolioBadge');
+    const inlineSummaryRecap = document.getElementById('inlineSummaryRecap');
+    const inlineResetBtn = document.getElementById('inlineResetBtn');
+    const goToReportBtn = document.getElementById('goToReportBtn');
+
+    const intakeIntroOverlay = document.getElementById('intakeIntroOverlay');
+    const inlineStartReportBtn = document.getElementById('inlineStartReportBtn');
+    const inlineCloseGuideBtn = document.getElementById('inlineCloseGuideBtn');
+    const inlineReopenGuideBtn = document.getElementById('inlineReopenGuideBtn');
+
+    let supabaseClient = null;
+    function getSupabaseClient() {
+      if (supabaseClient) return supabaseClient;
+      const sbUrl = (window.SUPABASE_URL || '').trim();
+      const sbKey = (window.SUPABASE_ANON_KEY || '').trim();
+      if (typeof window.supabase !== 'undefined' && sbUrl && sbKey && sbUrl.startsWith('https://')) {
+        try {
+          supabaseClient = window.supabase.createClient(sbUrl, sbKey);
+          console.log('[Supabase] Cliente inicializado correctamente.');
+        } catch (e) {
+          console.warn('[Supabase] Error al inicializar cliente:', e);
+        }
+      }
+      return supabaseClient;
+    }
+
+    async function saveReportToSupabase(record) {
+      const client = getSupabaseClient();
+      if (!client) {
+        console.info('[Supabase] Credenciales no configuradas en supabase-config.js. El reporte se preserva localmente en localStorage.');
+        return;
+      }
+
+      const tableName = (window.SUPABASE_TABLE || 'rescue_reports').trim();
+      try {
+        const payload = {
+          folio: record.id,
+          photo_url: record.photo || null,
+          location: record.location,
+          gps_coordinates: record.gps || null,
+          latitude: typeof record.lat === 'number' ? record.lat : null,
+          longitude: typeof record.lon === 'number' ? record.lon : null,
+          health_status: record.health,
+          description: record.description || null,
+          video_url: record.video || null,
+          reporter_name: record.repName,
+          reporter_phone: record.repPhone,
+          privacy: record.privacy || 'private',
+          status: 'pendiente'
+        };
+
+        const { data, error } = await client.from(tableName).insert([payload]);
+        if (error) {
+          console.error('[Supabase] Error al registrar reporte en la tabla ' + tableName + ':', error.message);
+        } else {
+          console.log('[Supabase] ¡Reporte guardado exitosamente en la nube!', data);
+        }
+      } catch (err) {
+        console.error('[Supabase] Error de conexión:', err);
+      }
+    }
+
+    function dismissIntroGuide() {
+      if (intakeIntroOverlay) {
+        intakeIntroOverlay.classList.add('dismissed');
+      }
+    }
+
+    function openIntroGuide() {
+      if (intakeIntroOverlay) {
+        intakeIntroOverlay.classList.remove('dismissed');
+      }
+    }
+
+    if (inlineStartReportBtn) {
+      inlineStartReportBtn.addEventListener('click', dismissIntroGuide);
+    }
+
+    if (inlineCloseGuideBtn) {
+      inlineCloseGuideBtn.addEventListener('click', dismissIntroGuide);
+    }
+
+    if (inlineReopenGuideBtn) {
+      inlineReopenGuideBtn.addEventListener('click', openIntroGuide);
+    }
+
+    function validateInlineStep1() {
+      const hasPhoto = Boolean(inlineReportData.photo);
+      const hasLocation = inlineLocationInput && inlineLocationInput.value.trim().length >= 3;
+      const hasHealth = Boolean(inlineHealthSelect && inlineHealthSelect.value);
+
+      if (hasPhoto && hasLocation && hasHealth) {
+        if (inlineNextStepBtn) inlineNextStepBtn.disabled = false;
+        if (inlineStep1Hint) {
+          inlineStep1Hint.textContent = '✓ Requisitos listos. Haz clic en Siguiente para continuar.';
+          inlineStep1Hint.style.color = '#386641';
+        }
+      } else {
+        if (inlineNextStepBtn) inlineNextStepBtn.disabled = true;
+        const missing = [];
+        if (!hasPhoto) missing.push('foto');
+        if (!hasLocation) missing.push('lugar');
+        if (!hasHealth) missing.push('estado de salud');
+        if (inlineStep1Hint) {
+          inlineStep1Hint.textContent = `Falta indicar: ${missing.join(', ')}`;
+          inlineStep1Hint.style.color = 'rgba(44, 24, 16, 0.6)';
+        }
+      }
+    }
+
+    function applyInlinePhoto(src) {
+      inlineReportData.photo = src;
+      if (inlinePhotoImg) inlinePhotoImg.src = src;
+      if (inlinePhotoEmpty) inlinePhotoEmpty.style.display = 'none';
+      if (inlinePhotoPreviewWrap) inlinePhotoPreviewWrap.style.display = 'block';
+      const s2Photo = document.getElementById('inlineStep2PhotoPreview');
+      if (s2Photo) s2Photo.src = src;
+      validateInlineStep1();
+    }
+
+    if (inlinePhotoDropzone) {
+      inlinePhotoDropzone.addEventListener('click', (e) => {
+        if (e.target.closest('#inlineUseSamplePhotoBtn') || e.target.closest('#inlineChangePhotoBtn')) return;
+        if (!inlineReportData.photo && inlinePhotoInput) inlinePhotoInput.click();
+      });
+
+      inlinePhotoDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        inlinePhotoDropzone.style.borderColor = '#97522D';
+        inlinePhotoDropzone.style.background = '#FAF7EE';
+      });
+
+      inlinePhotoDropzone.addEventListener('dragleave', () => {
+        inlinePhotoDropzone.style.borderColor = 'rgba(151, 82, 45, 0.28)';
+        inlinePhotoDropzone.style.background = '#FFFFFF';
+      });
+
+      inlinePhotoDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        inlinePhotoDropzone.style.borderColor = 'rgba(151, 82, 45, 0.28)';
+        inlinePhotoDropzone.style.background = '#FFFFFF';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          const file = e.dataTransfer.files[0];
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (ev) => applyInlinePhoto(ev.target.result);
+            reader.readAsDataURL(file);
+          }
+        }
+      });
+    }
+
+    if (inlinePhotoInput) {
+      inlinePhotoInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (ev) => applyInlinePhoto(ev.target.result);
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+    }
+
+    if (inlineUseSamplePhotoBtn) {
+      inlineUseSamplePhotoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        applyInlinePhoto('assets/dog_espera.jpg');
+      });
+    }
+
+    if (inlineChangePhotoBtn) {
+      inlineChangePhotoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (inlinePhotoInput) inlinePhotoInput.click();
+      });
+    }
+
+    if (inlineLocationInput) {
+      inlineLocationInput.addEventListener('input', () => {
+        inlineReportData.location = inlineLocationInput.value.trim();
+        validateInlineStep1();
+      });
+    }
+
+    const CORO_FALLBACK = { lat: 11.4116, lon: -69.6736 };
+    let leafletMap = null;
+    let leafletMarker = null;
+    let currentMarkerLat = CORO_FALLBACK.lat;
+    let currentMarkerLon = CORO_FALLBACK.lon;
+    let reverseGeocodeAbort = null;
+    let resolvedStreetAddress = '';
+    let reverseGeocodeTimer = null;
+
+    const petMapIcon = (typeof L !== 'undefined') ? L.divIcon({
+      className: 'custom-gps-leaflet-pin',
+      html: `
+        <div class="gps-pin-marker-pulse"></div>
+        <div class="gps-pin-marker-body">
+          <svg width="34" height="44" viewBox="0 0 34 44" fill="none">
+            <path d="M17 0C7.611 0 0 7.611 0 17C0 29.75 17 44 17 44C17 44 34 29.75 34 17C34 7.611 26.389 0 17 0Z" fill="#97522D"/>
+            <path d="M17 2C8.716 2 2 8.716 2 17C2 28.2 16.5 41.5 17 41.9C17.5 41.5 32 28.2 32 17C32 8.716 25.284 2 17 2Z" stroke="#FAF7EE" stroke-width="2"/>
+            <circle cx="17" cy="17" r="6" fill="#FAF7EE"/>
+          </svg>
+        </div>
+      `,
+      iconSize: [34, 44],
+      iconAnchor: [17, 44]
+    }) : null;
+
+    function formatCoords(lat, lon) {
+      const latDeg = lat >= 0 ? `${lat.toFixed(5)}° N` : `${Math.abs(lat).toFixed(5)}° S`;
+      const lonDeg = lon >= 0 ? `${lon.toFixed(5)}° E` : `${Math.abs(lon).toFixed(5)}° W`;
+      return `${latDeg}, ${lonDeg}`;
+    }
+
+    function updateLiveGpsDisplay(lat, lon) {
+      currentMarkerLat = lat;
+      currentMarkerLon = lon;
+      if (gpsLiveCoordsText) {
+        gpsLiveCoordsText.textContent = formatCoords(lat, lon);
+      }
+
+      if (gpsLiveAddressText) {
+        gpsLiveAddressText.textContent = 'Buscando referencia de calle cercana...';
+      }
+
+      if (reverseGeocodeAbort) {
+        try { reverseGeocodeAbort.abort(); } catch (e) {}
+      }
+      reverseGeocodeAbort = new AbortController();
+
+      clearTimeout(reverseGeocodeTimer);
+      reverseGeocodeTimer = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`, {
+          signal: reverseGeocodeAbort.signal,
+          headers: { 'Accept-Language': 'es' }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.address) {
+            const parts = [];
+            const a = data.address;
+            if (a.road) parts.push(a.road);
+            if (a.house_number) parts.push(`Nº ${a.house_number}`);
+            if (a.neighbourhood || a.suburb) parts.push(a.neighbourhood || a.suburb);
+            if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village);
+
+            resolvedStreetAddress = parts.length > 0 ? parts.join(', ') : (data.display_name ? data.display_name.split(',').slice(0, 3).join(',') : '');
+            if (gpsLiveAddressText) {
+              gpsLiveAddressText.textContent = resolvedStreetAddress || `Sector cercano (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+            }
+          } else {
+            resolvedStreetAddress = '';
+            if (gpsLiveAddressText) gpsLiveAddressText.textContent = `Coordenadas fijadas (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+          }
+        })
+        .catch(err => {
+          if (err && err.name !== 'AbortError') {
+            resolvedStreetAddress = '';
+            if (gpsLiveAddressText) gpsLiveAddressText.textContent = `Punto fijado en mapa (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+          }
+        });
+      }, 350);
+    }
+
+    function initOrUpdateMap(targetLat, targetLon) {
+      currentMarkerLat = targetLat;
+      currentMarkerLon = targetLon;
+
+      if (typeof L === 'undefined') return;
+
+      if (!leafletMap) {
+        leafletMap = L.map('gpsMapCanvas', {
+          zoomControl: true,
+          attributionControl: false
+        }).setView([targetLat, targetLon], 17);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          attribution: '&copy; Esri'
+        }).addTo(leafletMap);
+
+        leafletMarker = L.marker([targetLat, targetLon], {
+          icon: petMapIcon,
+          draggable: true
+        }).addTo(leafletMap);
+
+        leafletMarker.on('dragend', (e) => {
+          const pos = e.target.getLatLng();
+          updateLiveGpsDisplay(pos.lat, pos.lng);
+        });
+
+        leafletMap.on('click', (e) => {
+          leafletMarker.setLatLng(e.latlng);
+          updateLiveGpsDisplay(e.latlng.lat, e.latlng.lng);
+        });
+      } else {
+        leafletMap.setView([targetLat, targetLon], 17);
+        leafletMarker.setLatLng([targetLat, targetLon]);
+      }
+
+      updateLiveGpsDisplay(targetLat, targetLon);
+
+      setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 120);
+      setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 320);
+    }
+
+    function openGpsModal(initialLat, initialLon) {
+      if (gpsMapModal) {
+        gpsMapModal.style.display = 'flex';
+        void gpsMapModal.offsetHeight;
+        gpsMapModal.classList.add('open');
+        gpsMapModal.setAttribute('aria-hidden', 'false');
+      }
+      initOrUpdateMap(initialLat, initialLon);
+    }
+
+    function closeGpsModal() {
+      if (gpsMapModal) {
+        gpsMapModal.classList.remove('open');
+        gpsMapModal.setAttribute('aria-hidden', 'true');
+        setTimeout(() => {
+          if (!gpsMapModal.classList.contains('open')) {
+            gpsMapModal.style.display = 'none';
+          }
+        }, 260);
+      }
+      if (inlineGpsBtn && !inlineReportData.gps) {
+        inlineGpsBtn.innerHTML = '<span>📍 Fijar en mapa</span>';
+      }
+    }
+
+    if (inlineGpsBtn) {
+      inlineGpsBtn.addEventListener('click', () => {
+        if (inlineReportData.lat && inlineReportData.lon) {
+          openGpsModal(inlineReportData.lat, inlineReportData.lon);
+          return;
+        }
+
+        inlineGpsBtn.innerHTML = '<span>📡 Leyendo GPS...</span>';
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const uLat = pos.coords.latitude;
+              const uLon = pos.coords.longitude;
+              openGpsModal(uLat, uLon);
+              inlineGpsBtn.innerHTML = '<span>📍 Fijar en mapa</span>';
+            },
+            () => {
+              openGpsModal(CORO_FALLBACK.lat, CORO_FALLBACK.lon);
+              inlineGpsBtn.innerHTML = '<span>📍 Fijar en mapa</span>';
+            },
+            { enableHighAccuracy: true, timeout: 3500, maximumAge: 10000 }
+          );
+        } else {
+          openGpsModal(CORO_FALLBACK.lat, CORO_FALLBACK.lon);
+          inlineGpsBtn.innerHTML = '<span>📍 Fijar en mapa</span>';
+        }
+      });
+    }
+
+    if (inlineGpsChip) {
+      inlineGpsChip.addEventListener('click', () => {
+        const lat = inlineReportData.lat || CORO_FALLBACK.lat;
+        const lon = inlineReportData.lon || CORO_FALLBACK.lon;
+        openGpsModal(lat, lon);
+      });
+    }
+
+    if (gpsRecenterBtn) {
+      gpsRecenterBtn.addEventListener('click', () => {
+        gpsRecenterBtn.innerHTML = '<span>📡 Leyendo...</span>';
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const lat = pos.coords.latitude;
+              const lon = pos.coords.longitude;
+              if (leafletMap && leafletMarker) {
+                leafletMap.flyTo([lat, lon], 17, { duration: 0.8 });
+                leafletMarker.setLatLng([lat, lon]);
+                updateLiveGpsDisplay(lat, lon);
+              }
+              gpsRecenterBtn.innerHTML = `
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                </svg>
+                <span>Mi posición GPS</span>
+              `;
+            },
+            () => {
+              alert('No se pudo obtener la señal de tu GPS en este momento. Puedes arrastrar el marcador manualmente al punto deseado.');
+              gpsRecenterBtn.innerHTML = `
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                </svg>
+                <span>Mi posición GPS</span>
+              `;
+            },
+            { enableHighAccuracy: true, timeout: 4000 }
+          );
+        }
+      });
+    }
+
+    if (gpsConfirmBtn) {
+      gpsConfirmBtn.addEventListener('click', () => {
+        inlineReportData.lat = currentMarkerLat;
+        inlineReportData.lon = currentMarkerLon;
+
+        const coordsStr = formatCoords(currentMarkerLat, currentMarkerLon);
+        inlineReportData.gps = coordsStr;
+
+        if (resolvedStreetAddress && (!inlineLocationInput.value.trim() || inlineLocationInput.value.startsWith('Punto fijado') || inlineLocationInput.value.startsWith('Cerca de'))) {
+          inlineLocationInput.value = resolvedStreetAddress;
+          inlineReportData.location = resolvedStreetAddress;
+        } else if (!inlineLocationInput.value.trim()) {
+          inlineLocationInput.value = `Punto fijado en mapa (${currentMarkerLat.toFixed(4)}, ${currentMarkerLon.toFixed(4)})`;
+          inlineReportData.location = inlineLocationInput.value;
+        }
+
+        if (inlineGpsCoordsText) {
+          inlineGpsCoordsText.textContent = `GPS: ${coordsStr} (Clic para reajustar)`;
+        }
+        if (inlineGpsChip) {
+          inlineGpsChip.style.display = 'inline-flex';
+        }
+        if (inlineGpsBtn) {
+          inlineGpsBtn.innerHTML = '<span>🗺️ Ver en mapa</span>';
+        }
+
+        closeGpsModal();
+        validateInlineStep1();
+      });
+    }
+
+    if (gpsModalCloseBtn) gpsModalCloseBtn.addEventListener('click', closeGpsModal);
+    if (gpsCancelBtn) gpsCancelBtn.addEventListener('click', closeGpsModal);
+    if (gpsMapModal) {
+      gpsMapModal.addEventListener('click', (e) => {
+        if (e.target === gpsMapModal) closeGpsModal();
+      });
+    }
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && gpsMapModal && gpsMapModal.classList.contains('open')) {
+        closeGpsModal();
+      }
+    });
+
+    if (inlineHealthSelect) {
+      inlineHealthSelect.addEventListener('change', () => {
+        inlineReportData.health = inlineHealthSelect.value;
+        validateInlineStep1();
+      });
+    }
+
+    if (inlineDescriptionInput) {
+      inlineDescriptionInput.addEventListener('input', () => {
+        inlineReportData.description = inlineDescriptionInput.value.trim();
+      });
+    }
+
+    if (inlineSampleVideoBtn && inlineVideoPreview && inlineVideoEmpty) {
+      inlineSampleVideoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        inlineVideoPreview.src = 'assets/hero-dog-director-cut.mp4';
+        inlineVideoEmpty.style.display = 'none';
+        inlineVideoPreview.style.display = 'block';
+        inlineReportData.video = 'assets/hero-dog-director-cut.mp4';
+      });
+    }
+
+    if (inlineVideoSlot && inlineVideoInput) {
+      inlineVideoSlot.addEventListener('click', (e) => {
+        if (e.target.closest('#inlineSampleVideoBtn')) return;
+        if (!inlineReportData.video) inlineVideoInput.click();
+      });
+
+      inlineVideoInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          const url = URL.createObjectURL(file);
+          inlineVideoPreview.src = url;
+          inlineVideoEmpty.style.display = 'none';
+          inlineVideoPreview.style.display = 'block';
+          inlineReportData.video = file.name;
+        }
+      });
+    }
+
+    if (inlineEnvSlot && inlineEnvInput && inlineEnvPreview && inlineEnvEmpty) {
+      inlineEnvSlot.addEventListener('click', () => {
+        if (!inlineReportData.envPhoto) inlineEnvInput.click();
+      });
+
+      inlineEnvInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            inlineEnvPreview.src = ev.target.result;
+            inlineEnvEmpty.style.display = 'none';
+            inlineEnvPreview.style.display = 'block';
+            inlineReportData.envPhoto = ev.target.result;
+          };
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+    }
+
+    if (inlineNextStepBtn) {
+      inlineNextStepBtn.addEventListener('click', () => {
+        if (intakeStep1Stage) intakeStep1Stage.style.display = 'none';
+        if (intakeStep2Stage) intakeStep2Stage.style.display = 'block';
+        if (intakeStepTab1) {
+          intakeStepTab1.classList.remove('active');
+          intakeStepTab1.classList.add('completed');
+          if (stepNum1) stepNum1.innerHTML = '✓';
+        }
+        if (intakeStepTab2) {
+          intakeStepTab2.classList.add('active');
+        }
+
+        const s2Loc = document.getElementById('inlineStep2LocPreview');
+        const s2Health = document.getElementById('inlineStep2HealthPreview');
+        const s2Photo = document.getElementById('inlineStep2PhotoPreview');
+        const s2Desc = document.getElementById('inlineStep2DescPreview');
+        const s2DescRow = document.getElementById('inlineStep2DescRow');
+        if (s2Loc) s2Loc.textContent = inlineReportData.location || 'No especificado';
+        if (s2Health) s2Health.textContent = inlineReportData.health || 'No especificado';
+        if (s2Photo && inlineReportData.photo) s2Photo.src = inlineReportData.photo;
+        if (s2Desc && s2DescRow) {
+          if (inlineReportData.description) {
+            s2Desc.textContent = inlineReportData.description;
+            s2DescRow.style.display = 'flex';
+          } else {
+            s2DescRow.style.display = 'none';
+          }
+        }
+
+        const cardTop = document.getElementById('intakeCard');
+        if (cardTop) {
+          const rect = cardTop.getBoundingClientRect();
+          const targetY = window.pageYOffset + rect.top - 30;
+          if (window.lenis) lenis.scrollTo(targetY, { duration: 0.8 });
+          else window.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
+      });
+    }
+
+    if (inlineBackStepBtn) {
+      inlineBackStepBtn.addEventListener('click', () => {
+        if (intakeStep2Stage) intakeStep2Stage.style.display = 'none';
+        if (intakeStep1Stage) intakeStep1Stage.style.display = 'block';
+        if (intakeStepTab2) intakeStepTab2.classList.remove('active');
+        if (intakeStepTab1) {
+          intakeStepTab1.classList.remove('completed');
+          intakeStepTab1.classList.add('active');
+          if (stepNum1) stepNum1.textContent = '01';
+        }
+      });
+    }
+
+    window.setInlinePrivacy = function(mode) {
+      inlineReportData.privacy = mode;
+      if (privCardPrivate && privCardPublic) {
+        if (mode === 'private') {
+          privCardPrivate.classList.add('active');
+          privCardPublic.classList.remove('active');
+        } else {
+          privCardPublic.classList.add('active');
+          privCardPrivate.classList.remove('active');
+        }
+      }
+    };
+
+    if (inlineSubmitBtn) {
+      inlineSubmitBtn.addEventListener('click', () => {
+        const name = inlineRepName ? inlineRepName.value.trim() : '';
+        const lastName = inlineRepLastName ? inlineRepLastName.value.trim() : '';
+        const phone = inlineRepPhone ? inlineRepPhone.value.trim() : '';
+
+        if (!name || !lastName || !phone) {
+          alert('Por favor completa tu Nombre, Apellido y Número de contacto para que el equipo pueda comunicarse contigo.');
+          if (!name && inlineRepName) inlineRepName.focus();
+          else if (!lastName && inlineRepLastName) inlineRepLastName.focus();
+          else if (!phone && inlineRepPhone) inlineRepPhone.focus();
+          return;
+        }
+
+        inlineReportData.repName = `${name} ${lastName}`;
+        inlineReportData.repPhone = phone;
+
+        const folioNum = Math.floor(1000 + Math.random() * 9000);
+        const folioCode = `FOLIO #SAN-2026-${folioNum}`;
+        if (inlineFolioBadge) inlineFolioBadge.textContent = folioCode;
+
+        try {
+          const storedReports = JSON.parse(localStorage.getItem('pethomefinder_reports') || '[]');
+          const newReportRecord = {
+            id: folioCode,
+            folioNum: folioNum,
+            createdAt: new Date().toISOString(),
+            photo: inlineReportData.photo,
+            location: inlineReportData.location,
+            gps: inlineReportData.gps,
+            lat: inlineReportData.lat,
+            lon: inlineReportData.lon,
+            health: inlineReportData.health,
+            description: inlineReportData.description,
+            video: inlineReportData.video,
+            envPhoto: inlineReportData.envPhoto,
+            repName: inlineReportData.repName,
+            repPhone: inlineReportData.repPhone,
+            privacy: inlineReportData.privacy
+          };
+          storedReports.unshift(newReportRecord);
+          localStorage.setItem('pethomefinder_reports', JSON.stringify(storedReports));
+          console.log('[PetHomeFinder] Reporte guardado localmente con éxito:', newReportRecord);
+
+          saveReportToSupabase(newReportRecord);
+        } catch (storageErr) {
+          console.warn('[PetHomeFinder] No se pudo guardar en localStorage:', storageErr);
+        }
+
+        const isPriv = inlineReportData.privacy === 'private';
+        const privacyBadge = isPriv 
+          ? '<span style="color:#2C1810; font-weight:600;">🔒 Privado</span> (Solo accesible por la brigada médica)'
+          : '<span style="color:#97522D; font-weight:600;">📢 Público</span> (Comunidad y adoptantes pueden contactarte)';
+
+        if (inlineSummaryRecap) {
+          inlineSummaryRecap.innerHTML = `
+            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.85rem; border-bottom: 1px solid rgba(44, 24, 16, 0.08); padding-bottom: 0.85rem;">
+              <img src="${inlineReportData.photo}" alt="Mascota" style="width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(44, 24, 16, 0.12);" />
+              <div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: #2C1810;">${inlineReportData.location}</div>
+                <div style="font-size: 0.82rem; color: #97522D;">Salud: ${inlineReportData.health}</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; font-size: 0.82rem; text-align: left;">
+              <span style="opacity: 0.65;">Reportante:</span>
+              <strong style="color: #2C1810;">${inlineReportData.repName}</strong>
+              <span style="opacity: 0.65;">Contacto:</span>
+              <strong style="color: #2C1810;">${inlineReportData.repPhone}</strong>
+              <span style="opacity: 0.65;">Privacidad:</span>
+              <div>${privacyBadge}</div>
+              ${inlineReportData.gps ? `<span style="opacity: 0.65;">Coordenadas:</span><span style="color:#386641; font-weight:600;">${inlineReportData.gps}</span>` : ''}
+              ${inlineReportData.description ? `<span style="opacity: 0.65;">Descripción:</span><span style="color:#2C1810; font-style:italic;">"${inlineReportData.description}"</span>` : ''}
+              ${inlineReportData.video ? `<span style="opacity: 0.65;">Video:</span><span style="color:#97522D;">Adjuntado con éxito</span>` : ''}
+            </div>
+          `;
+        }
+
+        if (intakeStep2Stage) intakeStep2Stage.style.display = 'none';
+        if (intakeSuccessStage) intakeSuccessStage.style.display = 'block';
+        if (intakeStepTab2) {
+          intakeStepTab2.classList.remove('active');
+          intakeStepTab2.classList.add('completed');
+          if (stepNum2) stepNum2.innerHTML = '✓';
+        }
+
+        const cardTop = document.getElementById('intakeCard');
+        if (cardTop) {
+          const rect = cardTop.getBoundingClientRect();
+          const targetY = window.pageYOffset + rect.top - 20;
+          if (window.lenis) lenis.scrollTo(targetY, { duration: 0.8 });
+          else window.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
+      });
+    }
+
+    if (inlineResetBtn) {
+      inlineResetBtn.addEventListener('click', () => {
+        inlineReportData.photo = '';
+        inlineReportData.location = '';
+        inlineReportData.gps = '';
+        inlineReportData.lat = null;
+        inlineReportData.lon = null;
+        inlineReportData.health = '';
+        inlineReportData.description = '';
+        inlineReportData.video = '';
+        inlineReportData.envPhoto = '';
+        inlineReportData.repName = '';
+        inlineReportData.repLastName = '';
+        inlineReportData.repPhone = '';
+        inlineReportData.privacy = 'private';
+
+        if (inlinePhotoEmpty) inlinePhotoEmpty.style.display = 'flex';
+        if (inlinePhotoPreviewWrap) inlinePhotoPreviewWrap.style.display = 'none';
+        if (inlinePhotoImg) inlinePhotoImg.src = '';
+        if (inlineLocationInput) inlineLocationInput.value = '';
+        if (inlineHealthSelect) inlineHealthSelect.selectedIndex = 0;
+        if (inlineDescriptionInput) inlineDescriptionInput.value = '';
+        if (inlineGpsChip) inlineGpsChip.style.display = 'none';
+        if (inlineGpsBtn) inlineGpsBtn.innerHTML = '<span>📍 Fijar en mapa</span>';
+
+        const s2Loc = document.getElementById('inlineStep2LocPreview');
+        const s2Health = document.getElementById('inlineStep2HealthPreview');
+        const s2Photo = document.getElementById('inlineStep2PhotoPreview');
+        const s2Desc = document.getElementById('inlineStep2DescPreview');
+        const s2DescRow = document.getElementById('inlineStep2DescRow');
+        if (s2Loc) s2Loc.textContent = 'Por definir';
+        if (s2Health) s2Health.textContent = 'Por definir';
+        if (s2Photo) s2Photo.src = 'assets/dog_espera.jpg';
+        if (s2Desc) s2Desc.textContent = '';
+        if (s2DescRow) s2DescRow.style.display = 'none';
+
+        if (inlineVideoPreview) {
+          inlineVideoPreview.pause();
+          inlineVideoPreview.src = '';
+          inlineVideoPreview.style.display = 'none';
+        }
+        if (inlineVideoEmpty) inlineVideoEmpty.style.display = 'block';
+
+        if (inlineEnvPreview) {
+          inlineEnvPreview.src = '';
+          inlineEnvPreview.style.display = 'none';
+        }
+        if (inlineEnvEmpty) inlineEnvEmpty.style.display = 'block';
+
+        if (inlineRepName) inlineRepName.value = '';
+        if (inlineRepLastName) inlineRepLastName.value = '';
+        if (inlineRepPhone) inlineRepPhone.value = '';
+        setInlinePrivacy('private');
+
+        if (intakeSuccessStage) intakeSuccessStage.style.display = 'none';
+        if (intakeStep2Stage) intakeStep2Stage.style.display = 'none';
+        if (intakeStep1Stage) intakeStep1Stage.style.display = 'block';
+
+        if (intakeStepTab1) {
+          intakeStepTab1.classList.remove('completed');
+          intakeStepTab1.classList.add('active');
+          if (stepNum1) stepNum1.textContent = '01';
+        }
+        if (intakeStepTab2) {
+          intakeStepTab2.classList.remove('completed', 'active');
+          if (stepNum2) stepNum2.textContent = '02';
+        }
+
+        validateInlineStep1();
+      });
+    }
+
+    if (goToReportBtn) {
+      goToReportBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById('rescueIntakeSection');
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          const targetY = window.pageYOffset + rect.top;
+          if (window.lenis) {
+            lenis.scrollTo(targetY, { duration: 1.25, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+          } else {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      });
+    }
+
+    if (window.location.hash === '#reportar' || window.location.hash === '#rescueIntakeSection') {
+      setTimeout(() => {
+        const target = document.getElementById('rescueIntakeSection');
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          const targetY = window.pageYOffset + rect.top;
+          if (window.lenis) lenis.scrollTo(targetY, { duration: 1.2 });
+          else target.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500);
+    }
+
+    ScrollTrigger.create({
+      trigger: '#rescueIntakeSection',
+      start: 'top bottom',
+      end: 'top top',
+      scrub: 1.1,
+      onUpdate: (self) => {
+        const p = self.progress;
+        gsap.set('#stickyStage', {
+          xPercent: -p * 60,
+          opacity: 1 - (p * 0.85)
+        });
+        gsap.set('#intakeCard', {
+          x: (1 - p) * 220,
+          opacity: Math.min(1, 0.2 + (p * 0.8)),
+          scale: 0.95 + (p * 0.05)
+        });
+        const intakeFooter = document.querySelector('#rescueIntakeSection .site-footer');
+        if (intakeFooter) {
+          gsap.set(intakeFooter, {
+            y: (1 - p) * 40,
+            opacity: Math.min(1, 0.2 + (p * 0.8))
+          });
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

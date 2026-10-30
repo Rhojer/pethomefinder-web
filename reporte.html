@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reportar Mascota en Calle — No Son De Raza</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-bone: #FAF7EE;
+      --bg-sand: #EDE8D0;
+      --bg-sand-subtle: #F6F3EA;
+      --ink-dark: #2C1810;
+      --ink-muted: #6F5E53;
+      --ink-faint: rgba(44, 24, 16, 0.4);
+      --border-sand: rgba(44, 24, 16, 0.14);
+      --border-sand-focus: rgba(151, 82, 45, 0.4);
+      --terracotta: #97522D;
+      --terracotta-dark: #7A3E1E;
+      --terracotta-tint: rgba(151, 82, 45, 0.08);
+      --emergency-red: #A33423;
+      --emergency-tint: rgba(163, 52, 35, 0.1);
+      --green-ok: #3A6946;
+      --green-tint: rgba(58, 105, 70, 0.12);
+    }
+
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-bone);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: var(--ink-dark);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    
+    .app-ambient {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 90% 10%, rgba(151, 82, 45, 0.05) 0%, transparent 55%),
+                  radial-gradient(circle at 10% 90%, rgba(237, 232, 208, 0.6) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    
+    .app-viewport {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      max-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    
+    .app-header {
+      height: 56px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.2rem, 3vw, 2.5rem);
+      background: var(--bg-bone);
+      border-bottom: 1px solid var(--border-sand);
+    }
+
+    .header-brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .header-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--terracotta);
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .header-back-link:hover {
+      opacity: 0.8;
+      transform: translateX(-2px);
+    }
+
+    .header-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink-dark);
+    }
+
+    .header-tag-express {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.65rem;
+      background: var(--bg-sand);
+      border-radius: 4px;
+      color: var(--terracotta-dark);
+      border: 1px solid var(--border-sand);
+    }
+
+    .header-hotline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .hotline-badge {
+      color: var(--terracotta);
+      font-weight: 700;
+    }
+
+    
+    .app-stepper {
+      height: 52px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.2rem, 3vw, 2.5rem);
+      background: var(--bg-sand-subtle);
+      border-bottom: 1px solid var(--border-sand);
+    }
+
+    .steps-list {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      list-style: none;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink-faint);
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.15s ease;
+    }
+
+    .step-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(44, 24, 16, 0.08);
+      color: var(--ink-muted);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .step-item.active {
+      color: var(--ink-dark);
+    }
+
+    .step-item.active .step-number {
+      background: var(--terracotta);
+      color: var(--bg-bone);
+    }
+
+    .step-item.completed {
+      color: var(--green-ok);
+    }
+
+    .step-item.completed .step-number {
+      background: var(--green-ok);
+      color: var(--bg-bone);
+    }
+
+    .step-badge-req {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: var(--terracotta-tint);
+      color: var(--terracotta);
+      border: 1px solid rgba(151, 82, 45, 0.2);
+    }
+
+    .step-badge-opt {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: rgba(44, 24, 16, 0.05);
+      color: var(--ink-muted);
+    }
+
+    .stepper-progress-hint {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    
+    .app-main {
+      flex: 1;
+      padding: 1rem clamp(1.2rem, 3vw, 2.5rem);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    
+    .step-stage {
+      display: none;
+      height: 100%;
+      max-height: calc(100vh - 56px - 52px - 64px - 2rem);
+      animation: fadeInStep 0.25s ease-out forwards;
+    }
+
+    .step-stage.active {
+      display: flex;
+    }
+
+    @keyframes fadeInStep {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    
+    .step1-grid {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.15fr;
+      gap: 1.25rem;
+      align-items: stretch;
+    }
+
+    .card-block {
+      background: #FFFFFF;
+      border: 1px solid var(--border-sand);
+      border-radius: 8px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(44, 24, 16, 0.03);
+      position: relative;
+    }
+
+    .card-block.highlight-required {
+      border-color: rgba(151, 82, 45, 0.35);
+    }
+
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.65rem;
+    }
+
+    .card-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--ink-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .card-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      background: var(--terracotta-tint);
+      color: var(--terracotta);
+    }
+
+    
+    .photo-dropzone {
+      flex: 1;
+      border: 1.5px dashed var(--border-sand);
+      border-radius: 6px;
+      background: var(--bg-bone);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.8rem;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .photo-dropzone:hover {
+      border-color: var(--terracotta);
+      background-color: #FAF5E8;
+    }
+
+    .photo-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .photo-preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .photo-empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .photo-empty-icon {
+      color: var(--terracotta);
+      opacity: 0.8;
+    }
+
+    .photo-empty-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--ink-dark);
+    }
+
+    .photo-empty-desc {
+      font-size: 0.72rem;
+      color: var(--ink-muted);
+      line-height: 1.3;
+    }
+
+    .photo-quick-sample {
+      margin-top: 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--terracotta);
+      background: var(--terracotta-tint);
+      border: 1px solid rgba(151, 82, 45, 0.25);
+      border-radius: 4px;
+      padding: 0.35rem 0.7rem;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .photo-quick-sample:hover {
+      opacity: 0.85;
+    }
+
+    .card-footer-status {
+      margin-top: 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .status-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: var(--green-ok);
+    }
+
+    
+    .map-preview-container {
+      flex: 1;
+      border-radius: 6px;
+      border: 1px solid var(--border-sand);
+      overflow: hidden;
+      background: #D9D2BE;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .map-svg-mock {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .map-pin-marker {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -100%);
+      pointer-events: none;
+      filter: drop-shadow(0 2px 4px rgba(44, 24, 16, 0.3));
+      animation: pinBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pinBounce {
+      0% { transform: translate(-50%, -150%); opacity: 0; }
+      100% { transform: translate(-50%, -100%); opacity: 1; }
+    }
+
+    .map-gps-overlay {
+      position: relative;
+      z-index: 2;
+      background: rgba(250, 247, 238, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 0.45rem 0.65rem;
+      border-top: 1px solid var(--border-sand);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .gps-coords-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--ink-dark);
+      font-family: monospace;
+    }
+
+    .gps-detect-btn {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--bg-bone);
+      background: var(--ink-dark);
+      border: none;
+      border-radius: 4px;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .gps-detect-btn:hover {
+      background: var(--terracotta);
+    }
+
+    .address-input-wrapper {
+      margin-top: 0.65rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--ink-dark);
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .text-input {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.82rem;
+      color: var(--ink-dark);
+      background: var(--bg-sand-subtle);
+      border: 1px solid var(--border-sand);
+      border-radius: 4px;
+      padding: 0.5rem 0.65rem;
+      outline: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .text-input:focus {
+      border-color: var(--terracotta);
+      background: #FFFFFF;
+    }
+
+    
+    .textarea-input {
+      width: 100%;
+      height: 110px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--ink-dark);
+      background: var(--bg-sand-subtle);
+      border: 1px solid var(--border-sand);
+      border-radius: 4px;
+      padding: 0.6rem;
+      outline: none;
+      resize: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .textarea-input:focus {
+      border-color: var(--terracotta);
+      background: #FFFFFF;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--ink-faint);
+      margin-top: 0.2rem;
+    }
+
+    .risk-toggle-group {
+      margin-top: 0.6rem;
+    }
+
+    .risk-pills {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.35rem;
+    }
+
+    .risk-pill-btn {
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-sand);
+      background: var(--bg-bone);
+      color: var(--ink-dark);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .risk-pill-btn.selected-danger {
+      background: var(--emergency-tint);
+      border-color: var(--emergency-red);
+      color: var(--emergency-red);
+      font-weight: 700;
+    }
+
+    .risk-pill-btn.selected-normal {
+      background: var(--terracotta-tint);
+      border-color: var(--terracotta);
+      color: var(--terracotta);
+      font-weight: 700;
+    }
+
+    
+    .split-layout {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    
+    .summary-sidebar {
+      background: var(--bg-sand);
+      border: 1px solid var(--border-sand);
+      border-radius: 8px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .summary-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--green-ok);
+      background: var(--green-tint);
+      padding: 0.25rem 0.55rem;
+      border-radius: 4px;
+      margin-bottom: 0.8rem;
+    }
+
+    .summary-pet-thumb {
+      width: 100%;
+      height: 130px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border-sand);
+      background: #FFFFFF;
+      margin-bottom: 0.75rem;
+    }
+
+    .summary-info-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--ink-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.2rem;
+    }
+
+    .summary-info-desc {
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: var(--ink-muted);
+      margin-bottom: 0.75rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .summary-address-badge {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--ink-dark);
+      background: rgba(255, 255, 255, 0.75);
+      padding: 0.45rem 0.6rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-sand);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .summary-footer-note {
+      font-size: 0.7rem;
+      color: var(--ink-muted);
+      border-top: 1px solid var(--border-sand);
+      padding-top: 0.65rem;
+      line-height: 1.35;
+    }
+
+    
+    .optional-main-panel {
+      background: #FFFFFF;
+      border: 1px solid var(--border-sand);
+      border-radius: 8px;
+      padding: 1.3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .panel-headline {
+      margin-bottom: 1rem;
+    }
+
+    .panel-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink-dark);
+      letter-spacing: -0.015em;
+    }
+
+    .panel-subtitle-badge {
+      display: inline-block;
+      margin-top: 0.3rem;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      background: var(--bg-sand-subtle);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    
+    .pathology-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+
+    .pathology-tag-btn {
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-align: left;
+      padding: 0.65rem 0.8rem;
+      background: var(--bg-bone);
+      border: 1px solid var(--border-sand);
+      border-radius: 6px;
+      color: var(--ink-dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .pathology-tag-btn:hover {
+      border-color: var(--terracotta);
+    }
+
+    .pathology-tag-btn.active {
+      background: var(--terracotta-tint);
+      border-color: var(--terracotta);
+      color: var(--terracotta-dark);
+      font-weight: 700;
+    }
+
+    .tag-check-circle {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1.5px solid var(--border-sand);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+
+    .pathology-tag-btn.active .tag-check-circle {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: #FFFFFF;
+    }
+
+    
+    .optional-controls-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .pill-selector {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+    }
+
+    .pill-opt-btn {
+      flex: 1;
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 0.45rem 0.2rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-sand);
+      background: var(--bg-bone);
+      color: var(--ink-dark);
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .pill-opt-btn.active {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: var(--bg-bone);
+    }
+
+    
+    .media-dual-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.25rem;
+      height: 100%;
+      align-items: stretch;
+    }
+
+    .video-upload-box {
+      border: 1.5px dashed var(--border-sand);
+      border-radius: 6px;
+      background: var(--bg-bone);
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .video-upload-box input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .video-player-preview {
+      width: 100%;
+      max-height: 150px;
+      border-radius: 4px;
+      background: #000;
+      display: none;
+    }
+
+    .env-photos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+    }
+
+    .env-photo-slot {
+      height: 100px;
+      border: 1px dashed var(--border-sand);
+      border-radius: 6px;
+      background: var(--bg-sand-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      color: var(--ink-muted);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .env-photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    
+    .foster-contact-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .foster-card-option {
+      border: 1px solid var(--border-sand);
+      border-radius: 6px;
+      padding: 0.75rem;
+      background: var(--bg-bone);
+      margin-bottom: 0.6rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .foster-card-option.active {
+      border-color: var(--terracotta);
+      background-color: var(--terracotta-tint);
+    }
+
+    .foster-option-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--ink-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .foster-option-desc {
+      font-size: 0.74rem;
+      color: var(--ink-muted);
+      margin-top: 0.2rem;
+    }
+
+    
+    .app-footer-bar {
+      height: 64px;
+      flex-shrink: 0;
+      background: var(--bg-bone);
+      border-top: 1px solid var(--border-sand);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.2rem, 3vw, 2.5rem);
+    }
+
+    .footer-left-hint {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .footer-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    
+    .btn {
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.6rem 1.15rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      outline: none;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border-sand);
+      color: var(--ink-dark);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-sand);
+    }
+
+    .btn-skip {
+      background: var(--bg-sand);
+      border: 1px solid rgba(151, 82, 45, 0.3);
+      color: var(--terracotta-dark);
+      font-weight: 600;
+    }
+
+    .btn-skip:hover {
+      background: #E5DFC4;
+    }
+
+    .btn-primary {
+      background: var(--ink-dark);
+      border: 1px solid var(--ink-dark);
+      color: var(--bg-bone);
+    }
+
+    .btn-primary:hover {
+      background: #190E0A;
+    }
+
+    .btn-emergency-primary {
+      background: var(--terracotta);
+      border: 1px solid var(--terracotta-dark);
+      color: var(--bg-bone);
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(151, 82, 45, 0.25);
+    }
+
+    .btn-emergency-primary:hover {
+      background: var(--terracotta-dark);
+      box-shadow: 0 4px 10px rgba(151, 82, 45, 0.35);
+    }
+
+    .btn-emergency-primary:disabled,
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 24, 16, 0.65);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-card {
+      background: var(--bg-bone);
+      border: 1px solid var(--border-sand);
+      border-radius: 10px;
+      max-width: 580px;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 16px 36px rgba(44, 24, 16, 0.25);
+      text-align: center;
+    }
+
+    .modal-icon-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--green-tint);
+      color: var(--green-ok);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--ink-dark);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-folio {
+      font-family: monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--terracotta);
+      background: var(--terracotta-tint);
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 4px;
+      margin-bottom: 1.2rem;
+      border: 1px solid rgba(151, 82, 45, 0.2);
+    }
+
+    .modal-recap-box {
+      background: var(--bg-sand);
+      border: 1px solid var(--border-sand);
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: left;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--ink-dark);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-ambient"></div>
+
+  <div class="app-viewport">
+    
+    <header class="app-header">
+      <div class="header-brand-group">
+        <a href="index.html" class="header-back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Inicio
+        </a>
+        <a href="catalogo.html" class="header-back-link" style="color: var(--ink-muted);">
+          Catálogo
+        </a>
+        <h1 class="header-title">PetHomeFinder — Registro de Rescate</h1>
+        <span class="header-tag-express">Modo Ágil • 3 Datos Esenciales</span>
+      </div>
+
+      <div class="header-hotline">
+        <span>Brigada de Emergencia:</span>
+        <span class="hotline-badge">(800) 555-PAWS</span>
+      </div>
+    </header>
+
+    
+    <nav class="app-stepper" aria-label="Progreso del reporte">
+      <ol class="steps-list">
+        <li class="step-item active" id="stepperTab1" onclick="goToStep(1)">
+          <span class="step-number" id="numStep1">1</span>
+          <span>Datos Clave</span>
+          <span class="step-badge-req">Obligatorio *</span>
+        </li>
+        <li class="step-item" id="stepperTab2" onclick="goToStep(2)">
+          <span class="step-number" id="numStep2">2</span>
+          <span>Salud & Patologías</span>
+          <span class="step-badge-opt">Opcional</span>
+        </li>
+        <li class="step-item" id="stepperTab3" onclick="goToStep(3)">
+          <span class="step-number" id="numStep3">3</span>
+          <span>Fotos Entorno & Video</span>
+          <span class="step-badge-opt">Opcional</span>
+        </li>
+        <li class="step-item" id="stepperTab4" onclick="goToStep(4)">
+          <span class="step-number" id="numStep4">4</span>
+          <span>Resguardo & Contacto</span>
+          <span class="step-badge-opt">Opcional</span>
+        </li>
+      </ol>
+
+      <div class="stepper-progress-hint" id="stepperProgressHint">
+        3 datos mínimos para despachar
+      </div>
+    </nav>
+
+    
+    <main class="app-main">
+      
+      
+      <section class="step-stage active" id="stepStage1">
+        <div class="step1-grid">
+          
+          
+          <article class="card-block highlight-required">
+            <div class="card-header-row">
+              <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                1. Foto del Animal
+              </h2>
+              <span class="card-badge">Obligatorio *</span>
+            </div>
+
+            <div class="photo-dropzone" id="photoDropzone">
+              <input type="file" id="petPhotoInput" accept="image/*" />
+              <img id="petPhotoPreview" class="photo-preview-img" alt="Previsualización de la mascota" />
+              
+              <div class="photo-empty-state" id="photoEmptyState">
+                <svg class="photo-empty-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="photo-empty-title">Haz clic o arrastra la foto</div>
+                <div class="photo-empty-desc">Rostro o cuerpo entero donde se aprecie su estado</div>
+                <button type="button" class="photo-quick-sample" id="useSamplePhotoBtn">
+                  ⚡ Usar foto de muestra de prueba
+                </button>
+              </div>
+            </div>
+
+            <div class="card-footer-status">
+              <span id="photoStatusText">Sin foto adjuntada</span>
+              <span id="photoStatusIcon" style="display: none;" class="status-check">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Listo
+              </span>
+            </div>
+          </article>
+
+          
+          <article class="card-block highlight-required">
+            <div class="card-header-row">
+              <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                2. Lugar del Hallazgo
+              </h2>
+              <span class="card-badge">Obligatorio *</span>
+            </div>
+
+            <div class="map-preview-container" id="mapContainer">
+              
+              <svg class="map-svg-mock" viewBox="0 0 400 240" preserveAspectRatio="none">
+                <rect width="400" height="240" fill="#E8E2D0"/>
+                
+                <path d="M0,60 Q180,70 400,50 M0,160 Q200,150 400,170 M120,0 L130,240 M280,0 L270,240" stroke="#FAF7EE" stroke-width="12" fill="none"/>
+                <path d="M40,110 L360,110 M200,0 L200,240" stroke="#FAF7EE" stroke-width="8" fill="none"/>
+                <circle cx="200" cy="110" r="35" fill="rgba(151,82,45,0.08)"/>
+                <circle cx="200" cy="110" r="8" fill="rgba(151,82,45,0.2)"/>
+              </svg>
+
+              <div class="map-pin-marker" id="mapPin">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="#97522D">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+              </div>
+
+              <div class="map-gps-overlay">
+                <span class="gps-coords-text" id="gpsCoordsText">GPS: 11.4116° N, 69.6736° W</span>
+                <button type="button" class="gps-detect-btn" id="detectGpsBtn">
+                  📍 Fijar mi GPS
+                </button>
+              </div>
+            </div>
+
+            <div class="address-input-wrapper">
+              <label class="form-label" for="addressInput">Dirección o Referencia Clave *</label>
+              <input type="text" id="addressInput" class="text-input" placeholder="Ej. Av. Manaure con Calle Falcón, frente a la plaza" value="Av. Independencia frente a Estación El Trébol, Coro" />
+            </div>
+
+            <div class="card-footer-status">
+              <span id="locStatusText">Ubicación fijada</span>
+              <span class="status-check">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Listo
+              </span>
+            </div>
+          </article>
+
+          
+          <article class="card-block highlight-required">
+            <div class="card-header-row">
+              <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                3. Descripción Breve
+              </h2>
+              <span class="card-badge">Obligatorio *</span>
+            </div>
+
+            <div>
+              <label class="form-label" for="petDescInput">¿Qué observas? (Tamaño, color, condición) *</label>
+              <textarea id="petDescInput" class="textarea-input" maxlength="140" placeholder="Ej. Canino mestizo mediano color negro con pecho blanco, echado en la acera, asustado pero no agresivo..."></textarea>
+              <div class="char-count" id="charCountLabel">0 / 140 caracteres</div>
+            </div>
+
+            <div class="risk-toggle-group">
+              <label class="form-label">¿Está en peligro inminente? (Vía rápida, sangrado, asfixia)</label>
+              <div class="risk-pills">
+                <button type="button" class="risk-pill-btn selected-normal" id="riskNormalBtn" onclick="setRisk(false)">
+                  No, pero necesita rescate
+                </button>
+                <button type="button" class="risk-pill-btn" id="riskDangerBtn" onclick="setRisk(true)">
+                  ⚠️ Sí, peligro crítico
+                </button>
+              </div>
+            </div>
+
+            <div class="card-footer-status">
+              <span id="descStatusText">Pendiente descripción</span>
+              <span id="descStatusIcon" style="display: none;" class="status-check">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Listo
+              </span>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      
+      <section class="step-stage" id="stepStage2">
+        <div class="split-layout">
+          
+          
+          <aside class="summary-sidebar">
+            <div>
+              <span class="summary-header-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Datos Clave Salvaguardados
+              </span>
+              <img id="summaryPetThumb2" class="summary-pet-thumb" src="" alt="Mascota rescatada" />
+              <div class="summary-info-title">Descripción Registrada</div>
+              <p class="summary-info-desc" id="summaryDesc2">Cargando...</p>
+              
+              <div class="summary-address-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="summaryAddress2" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</span>
+              </div>
+            </div>
+
+            <div class="summary-footer-note">
+              🛡️ Lo esencial ya está asegurado. Puedes omitir este paso si tienes prisa.
+            </div>
+          </aside>
+
+          
+          <article class="optional-main-panel">
+            <div class="panel-headline">
+              <h2 class="panel-title">¿Sospechas de alguna patología o lesión visible?</h2>
+              <span class="panel-subtitle-badge">(Paso Opcional — Si no sabes o no estás seguro, puedes saltarlo sin problema)</span>
+            </div>
+
+            
+            <div class="pathology-grid">
+              <button type="button" class="pathology-tag-btn" onclick="toggleTag(this, 'Desnutrición o delgadez severa')">
+                <span>Desnutrición extrema</span>
+                <span class="tag-check-circle">✓</span>
+              </button>
+              <button type="button" class="pathology-tag-btn" onclick="toggleTag(this, 'Cojera o fractura aparente')">
+                <span>Cojera / Claudicación</span>
+                <span class="tag-check-circle">✓</span>
+              </button>
+              <button type="button" class="pathology-tag-btn" onclick="toggleTag(this, 'Heridas abiertas o sangrado')">
+                <span>Heridas / Sangrado</span>
+                <span class="tag-check-circle">✓</span>
+              </button>
+              <button type="button" class="pathology-tag-btn" onclick="toggleTag(this, 'Sarna o caída de pelaje')">
+                <span>Sarna o dermatitis</span>
+                <span class="tag-check-circle">✓</span>
+              </button>
+              <button type="button" class="pathology-tag-btn" onclick="toggleTag(this, 'Ojos con secreción u opacidad')">
+                <span>Ojos con secreción</span>
+                <span class="tag-check-circle">✓</span>
+              </button>
+              <button type="button" class="pathology-tag-btn" onclick="toggleTag(this, 'Garrapatas o pulgas masivas')">
+                <span>Parásitos externos</span>
+                <span class="tag-check-circle">✓</span>
+              </button>
+            </div>
+
+            
+            <div class="optional-controls-row">
+              <div>
+                <label class="form-label">Estado de ánimo y reacción</label>
+                <div class="pill-selector">
+                  <button type="button" class="pill-opt-btn active" onclick="setMood(this, 'Alerta')">Alerta</button>
+                  <button type="button" class="pill-opt-btn" onclick="setMood(this, 'Asustado / Tímido')">Asustado</button>
+                  <button type="button" class="pill-opt-btn" onclick="setMood(this, 'Inmóvil / Débil')">Inmóvil</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label">Nivel de dolor aparente</label>
+                <div class="pill-selector">
+                  <button type="button" class="pill-opt-btn active" onclick="setPain(this, 'Leve')">1. Leve</button>
+                  <button type="button" class="pill-opt-btn" onclick="setPain(this, 'Moderado')">2. Moderado</button>
+                  <button type="button" class="pill-opt-btn" onclick="setPain(this, 'Agudo')">3. Agudo</button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label" for="pathologyNotes">Notas clínicas adicionales (opcional)</label>
+              <input type="text" id="pathologyNotes" class="text-input" placeholder="Ej. No apoya pata delantera izquierda, tiene costras en orejas..." />
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      
+      <section class="step-stage" id="stepStage3">
+        <div class="split-layout">
+          
+          <aside class="summary-sidebar">
+            <div>
+              <span class="summary-header-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Datos Clave Salvaguardados
+              </span>
+              <img id="summaryPetThumb3" class="summary-pet-thumb" src="" alt="Mascota rescatada" />
+              <div class="summary-info-title">Patologías Indicadas</div>
+              <p class="summary-info-desc" id="summaryPathologies3">Sin patologías específicas añadidas</p>
+            </div>
+
+            <div class="summary-footer-note">
+              🎥 El video permite a los veterinarios evaluar la marcha y respiración antes de llegar.
+            </div>
+          </aside>
+
+          <article class="optional-main-panel">
+            <div class="panel-headline">
+              <h2 class="panel-title">Video del Animal y Fotos del Entorno</h2>
+              <span class="panel-subtitle-badge">(Paso Opcional — Si no tienes video o fotos del entorno, puedes omitirlo)</span>
+            </div>
+
+            <div class="media-dual-grid">
+              
+              <div class="video-upload-box" id="videoBox">
+                <input type="file" id="videoFileInput" accept="video/*" />
+                <video id="videoPreview" class="video-player-preview" controls playsinline></video>
+                
+                <div id="videoEmptyState">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                  <div style="font-size: 0.84rem; font-weight: 700; color: var(--ink-dark); margin-top: 0.3rem;">Video de marcha o respiración</div>
+                  <div style="font-size: 0.72rem; color: var(--ink-muted); margin-top: 0.15rem;">Clips cortos de 10 a 30 segundos</div>
+                  <button type="button" class="photo-quick-sample" id="useSampleVideoBtn" style="margin-top: 0.5rem;">
+                    ▶️ Cargar clip de prueba
+                  </button>
+                </div>
+              </div>
+
+              
+              <div>
+                <label class="form-label">Fotos del entorno de hallazgo</label>
+                <div style="font-size: 0.72rem; color: var(--ink-muted); margin-bottom: 0.3rem;">
+                  Lote baldío, caja, alcantarilla o refugio improvisado
+                </div>
+                <div class="env-photos-grid">
+                  <div class="env-photo-slot" onclick="triggerEnvPhoto(1)">
+                    <img id="envImg1" alt="Entorno 1" />
+                    <span id="envSlotText1">+ Foto Entorno</span>
+                  </div>
+                  <div class="env-photo-slot" onclick="triggerEnvPhoto(2)">
+                    <img id="envImg2" alt="Entorno 2" />
+                    <span id="envSlotText2">+ Foto Detalle</span>
+                  </div>
+                </div>
+                <input type="file" id="envFileInput" accept="image/*" style="display: none;" />
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      
+      <section class="step-stage" id="stepStage4">
+        <div class="split-layout">
+          
+          <aside class="summary-sidebar">
+            <div>
+              <span class="summary-header-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Expediente Listo
+              </span>
+              <img id="summaryPetThumb4" class="summary-pet-thumb" src="" alt="Mascota rescatada" />
+              <div class="summary-info-title">Punto de rescate fijado</div>
+              <p class="summary-info-desc" id="summaryAddress4">-</p>
+            </div>
+
+            <div class="summary-footer-note">
+              🛡️ Puedes enviar el reporte de forma anónima si no deseas dejar teléfono.
+            </div>
+          </aside>
+
+          <article class="optional-main-panel">
+            <div class="panel-headline">
+              <h2 class="panel-title">Resguardo Temporal y Enlace Ciudadano</h2>
+              <span class="panel-subtitle-badge">(Paso Opcional — Ayuda al equipo a saber si el animal corre riesgo mientras la unidad llega)</span>
+            </div>
+
+            <div class="foster-contact-grid">
+              <div>
+                <label class="form-label">¿Puedes resguardar a la mascota mientras llega la brigada?</label>
+                
+                <div class="foster-card-option active" onclick="setFoster(this, 'No, está en vía pública y requiere rescate urgente')">
+                  <div class="foster-option-title">
+                    <span>🚨 No, está desprotegida en la vía pública</span>
+                  </div>
+                  <div class="foster-option-desc">Requiere movilización inmediata de la unidad móvil.</div>
+                </div>
+
+                <div class="foster-card-option" onclick="setFoster(this, 'Solo por las próximas 24 horas')">
+                  <div class="foster-option-title">
+                    <span>⏳ Solo por las próximas 24 horas</span>
+                  </div>
+                  <div class="foster-option-desc">Puedo retenerla en patio o garaje de forma segura hoy.</div>
+                </div>
+
+                <div class="foster-card-option" onclick="setFoster(this, 'Sí, puedo darle hogar temporal seguro')">
+                  <div class="foster-option-title">
+                    <span>🏡 Sí, puedo albergarla temporalmente</span>
+                  </div>
+                  <div class="foster-option-desc">Cuento con espacio mientras coordinan veterinario y albergue.</div>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label" for="contactName">Tu Nombre (opcional)</label>
+                <input type="text" id="contactName" class="text-input" placeholder="Ej. Carlos Mendoza" style="margin-bottom: 0.8rem;" />
+
+                <label class="form-label" for="contactPhone">Teléfono o WhatsApp (opcional)</label>
+                <input type="tel" id="contactPhone" class="text-input" placeholder="Ej. +58 412 555-1234" />
+                <div style="font-size: 0.72rem; color: var(--ink-muted); margin-top: 0.3rem;">
+                  Solo para que la unidad en camino te avise cuando llegue al punto.
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+    </main>
+
+    
+    <footer class="app-footer-bar">
+      <div class="footer-left-hint" id="footerHint">
+        <span>🛡️</span>
+        <span id="footerHintText">Completa los 3 datos marcados con (*) para despachar la brigada</span>
+      </div>
+
+      <div class="footer-actions-group" id="footerActions">
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-card">
+      <div class="modal-icon-badge">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      
+      <h2 class="modal-title">¡Reporte Recibido y Brigada Notificada!</h2>
+      <div class="modal-folio" id="modalFolioCode">FOLIO #SAN-2026-0894</div>
+
+      <div class="modal-recap-box" id="modalRecapContent">
+        
+      </div>
+
+      <div class="modal-actions-row">
+        <a href="catalogo.html" class="btn btn-ghost">Ver Mascotas en Refugio</a>
+        <a href="index.html" class="btn btn-primary">Volver al Inicio</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const reportState = {
+      step: 1,
+      photoDataUrl: null,
+      address: "Av. Independencia frente a Estación El Trébol, Coro",
+      coords: "11.4116° N, 69.6736° W",
+      description: "",
+      imminentRisk: false,
+      pathologies: [],
+      mood: "Alerta",
+      painLevel: "Leve",
+      pathologyNotes: "",
+      videoUrl: null,
+      envPhotos: [],
+      fosterCapacity: "No, está en vía pública y requiere rescate urgente",
+      contactName: "",
+      contactPhone: ""
+    };
+
+    const petPhotoInput = document.getElementById('petPhotoInput');
+    const petPhotoPreview = document.getElementById('petPhotoPreview');
+    const photoEmptyState = document.getElementById('photoEmptyState');
+    const photoStatusText = document.getElementById('photoStatusText');
+    const photoStatusIcon = document.getElementById('photoStatusIcon');
+    const useSamplePhotoBtn = document.getElementById('useSamplePhotoBtn');
+
+    const addressInput = document.getElementById('addressInput');
+    const petDescInput = document.getElementById('petDescInput');
+    const charCountLabel = document.getElementById('charCountLabel');
+    const descStatusText = document.getElementById('descStatusText');
+    const descStatusIcon = document.getElementById('descStatusIcon');
+
+    const footerActions = document.getElementById('footerActions');
+    const footerHintText = document.getElementById('footerHintText');
+    const stepperProgressHint = document.getElementById('stepperProgressHint');
+
+    petPhotoInput.addEventListener('change', handlePhotoSelect);
+    addressInput.addEventListener('input', updateMandatoryCheck);
+    petDescInput.addEventListener('input', handleDescInput);
+    
+    useSamplePhotoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setSamplePhoto();
+    });
+
+    document.getElementById('detectGpsBtn').addEventListener('click', detectGPS);
+    document.getElementById('useSampleVideoBtn').addEventListener('click', loadSampleVideo);
+
+    function setSamplePhoto() {
+      const sampleUrl = 'assets/dog_espera.jpg';
+      reportState.photoDataUrl = sampleUrl;
+      petPhotoPreview.src = sampleUrl;
+      petPhotoPreview.style.display = 'block';
+      photoEmptyState.style.display = 'none';
+      photoStatusText.textContent = 'Foto principal adjuntada';
+      photoStatusIcon.style.display = 'inline-flex';
+      updateMandatoryCheck();
+    }
+
+    function handlePhotoSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          reportState.photoDataUrl = evt.target.result;
+          petPhotoPreview.src = evt.target.result;
+          petPhotoPreview.style.display = 'block';
+          photoEmptyState.style.display = 'none';
+          photoStatusText.textContent = file.name;
+          photoStatusIcon.style.display = 'inline-flex';
+          updateMandatoryCheck();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleDescInput(e) {
+      const text = e.target.value;
+      reportState.description = text;
+      charCountLabel.textContent = `${text.length} / 140 caracteres`;
+      
+      if (text.trim().length >= 8) {
+        descStatusText.textContent = 'Descripción adecuada';
+        descStatusIcon.style.display = 'inline-flex';
+      } else {
+        descStatusText.textContent = 'Mínimo 8 caracteres';
+        descStatusIcon.style.display = 'none';
+      }
+      updateMandatoryCheck();
+    }
+
+    function detectGPS() {
+      const gpsLabel = document.getElementById('gpsCoordsText');
+      gpsLabel.textContent = 'Detectando satélites...';
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const coords = `${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° W (±${Math.round(pos.coords.accuracy)}m)`;
+            reportState.coords = coords;
+            gpsLabel.textContent = `GPS: ${coords}`;
+          },
+          () => {
+            reportState.coords = "11.4116° N, 69.6736° W (Coro)";
+            gpsLabel.textContent = "GPS: 11.4116° N, 69.6736° W (Coro)";
+          },
+          { timeout: 4000 }
+        );
+      } else {
+        gpsLabel.textContent = "GPS: 11.4116° N, 69.6736° W (Falcón)";
+      }
+    }
+
+    function setRisk(isCritical) {
+      reportState.imminentRisk = isCritical;
+      const normalBtn = document.getElementById('riskNormalBtn');
+      const dangerBtn = document.getElementById('riskDangerBtn');
+      if (isCritical) {
+        dangerBtn.className = 'risk-pill-btn selected-danger';
+        normalBtn.className = 'risk-pill-btn';
+      } else {
+        dangerBtn.className = 'risk-pill-btn';
+        normalBtn.className = 'risk-pill-btn selected-normal';
+      }
+    }
+
+    function isMandatoryComplete() {
+      const hasPhoto = Boolean(reportState.photoDataUrl);
+      const hasAddress = addressInput.value.trim().length >= 5;
+      const hasDesc = reportState.description.trim().length >= 8;
+      return hasPhoto && hasAddress && hasDesc;
+    }
+
+    function updateMandatoryCheck() {
+      reportState.address = addressInput.value.trim();
+      const ready = isMandatoryComplete();
+      
+      if (ready) {
+        document.getElementById('numStep1').textContent = '✓';
+        document.getElementById('stepperTab1').classList.add('completed');
+        stepperProgressHint.textContent = '✓ Datos esenciales listos para despacho';
+        stepperProgressHint.style.color = 'var(--green-ok)';
+        footerHintText.textContent = '✓ Datos mínimos completos: puedes despachar de inmediato o añadir más detalles.';
+      } else {
+        document.getElementById('numStep1').textContent = '1';
+        document.getElementById('stepperTab1').classList.remove('completed');
+        stepperProgressHint.textContent = '3 datos mínimos para despachar';
+        stepperProgressHint.style.color = 'var(--ink-muted)';
+        footerHintText.textContent = 'Completa los 3 datos marcados con (*) para despachar la brigada';
+      }
+
+      renderFooterActions();
+    }
+
+    function goToStep(stepNum) {
+      if (stepNum > 1 && !isMandatoryComplete()) {
+        alert('Por favor adjunta la foto, la dirección y una breve descripción de al menos 8 caracteres para continuar.');
+        return;
+      }
+
+      reportState.step = stepNum;
+
+      document.querySelectorAll('.step-stage').forEach((stage, idx) => {
+        stage.classList.toggle('active', (idx + 1) === stepNum);
+      });
+
+      for (let i = 1; i <= 4; i++) {
+        const tab = document.getElementById(`stepperTab${i}`);
+        tab.classList.toggle('active', i === stepNum);
+      }
+
+      syncSidebars();
+      renderFooterActions();
+    }
+
+    function syncSidebars() {
+      if (reportState.photoDataUrl) {
+        ['2', '3', '4'].forEach(id => {
+          const img = document.getElementById(`summaryPetThumb${id}`);
+          if (img) img.src = reportState.photoDataUrl;
+        });
+      }
+
+      const desc2 = document.getElementById('summaryDesc2');
+      if (desc2) desc2.textContent = reportState.description || "Sin descripción";
+
+      const addr2 = document.getElementById('summaryAddress2');
+      if (addr2) addr2.textContent = reportState.address;
+
+      const path3 = document.getElementById('summaryPathologies3');
+      if (path3) {
+        path3.textContent = reportState.pathologies.length > 0
+          ? reportState.pathologies.join(', ')
+          : "Sin signos específicos reportados (salud estable aparente)";
+      }
+
+      const addr4 = document.getElementById('summaryAddress4');
+      if (addr4) addr4.textContent = `${reportState.address} • (${reportState.coords})`;
+    }
+
+    function toggleTag(btn, tagName) {
+      btn.classList.toggle('active');
+      const idx = reportState.pathologies.indexOf(tagName);
+      if (idx >= 0) {
+        reportState.pathologies.splice(idx, 1);
+      } else {
+        reportState.pathologies.push(tagName);
+      }
+    }
+
+    function setMood(btn, mood) {
+      document.querySelectorAll('#stepStage2 .pill-selector button').forEach(b => {
+        if (b.parentElement === btn.parentElement) b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      reportState.mood = mood;
+    }
+
+    function setPain(btn, pain) {
+      document.querySelectorAll('#stepStage2 .pill-selector button').forEach(b => {
+        if (b.parentElement === btn.parentElement) b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      reportState.painLevel = pain;
+    }
+
+    function loadSampleVideo() {
+      const vid = document.getElementById('videoPreview');
+      const empty = document.getElementById('videoEmptyState');
+      vid.src = 'assets/hero-dog-director-cut.mp4';
+      vid.style.display = 'block';
+      empty.style.display = 'none';
+      reportState.videoUrl = vid.src;
+    }
+
+    let activeEnvSlot = 1;
+    function triggerEnvPhoto(slotNum) {
+      activeEnvSlot = slotNum;
+      document.getElementById('envFileInput').click();
+    }
+
+    document.getElementById('envFileInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = document.getElementById(`envImg${activeEnvSlot}`);
+          const text = document.getElementById(`envSlotText${activeEnvSlot}`);
+          img.src = evt.target.result;
+          img.style.display = 'block';
+          text.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function setFoster(card, optionText) {
+      document.querySelectorAll('.foster-card-option').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      reportState.fosterCapacity = optionText;
+    }
+
+    function renderFooterActions() {
+      const step = reportState.step;
+      const ready = isMandatoryComplete();
+
+      let html = '';
+
+      if (step === 1) {
+        html = `
+          <button type="button" class="btn btn-ghost" onclick="window.location.href='index.html'">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-skip" id="btnNextOptional" ${ready ? '' : 'disabled'} onclick="goToStep(2)">
+            Añadir detalles opcionales (salud, video) →
+          </button>
+          <button type="button" class="btn btn-emergency-primary" id="btnEmergencySend" ${ready ? '' : 'disabled'} onclick="submitReport(true)">
+            ⚡ Enviar Reporte de Emergencia Ahora
+          </button>
+        `;
+      } else if (step === 2) {
+        html = `
+          <button type="button" class="btn btn-ghost" onclick="goToStep(1)">
+            ← Volver a Datos Clave
+          </button>
+          <button type="button" class="btn btn-primary" onclick="submitReport(false)">
+            ✓ Enviar reporte con lo actual
+          </button>
+          <button type="button" class="btn btn-skip" onclick="goToStep(3)">
+            Omitir este paso e ir al video →
+          </button>
+          <button type="button" class="btn btn-emergency-primary" onclick="goToStep(3)">
+            Guardar y continuar →
+          </button>
+        `;
+      } else if (step === 3) {
+        html = `
+          <button type="button" class="btn btn-ghost" onclick="goToStep(2)">
+            ← Volver a Salud
+          </button>
+          <button type="button" class="btn btn-primary" onclick="submitReport(false)">
+            ✓ Enviar reporte con lo actual
+          </button>
+          <button type="button" class="btn btn-skip" onclick="goToStep(4)">
+            Omitir multimedia e ir a contacto →
+          </button>
+          <button type="button" class="btn btn-emergency-primary" onclick="goToStep(4)">
+            Guardar y continuar →
+          </button>
+        `;
+      } else if (step === 4) {
+        html = `
+          <button type="button" class="btn btn-ghost" onclick="goToStep(3)">
+            ← Volver
+          </button>
+          <button type="button" class="btn btn-skip" onclick="submitReport(false)">
+            Omitir contacto y enviar anónimo
+          </button>
+          <button type="button" class="btn btn-emergency-primary" onclick="submitReport(false)">
+            Confirmar y Despachar Brigada Móvil
+          </button>
+        `;
+      }
+
+      footerActions.innerHTML = html;
+    }
+
+    function submitReport(isImmediate) {
+      if (!isMandatoryComplete()) {
+        alert('Se requieren los 3 datos obligatorios (Foto, Lugar y Descripción).');
+        return;
+      }
+
+      const randomFolio = 'SAN-2026-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('modalFolioCode').textContent = `FOLIO #${randomFolio}`;
+
+      const name = document.getElementById('contactName')?.value.trim();
+      const phone = document.getElementById('contactPhone')?.value.trim();
+
+      const modalRecap = document.getElementById('modalRecapContent');
+      modalRecap.innerHTML = `
+        <div style="margin-bottom: 0.5rem;"><strong>📍 Ubicación de encuentro:</strong> ${reportState.address}</div>
+        <div style="margin-bottom: 0.5rem;"><strong>📝 Situación:</strong> ${reportState.description}</div>
+        <div style="margin-bottom: 0.5rem;"><strong>⚠️ Nivel de urgencia:</strong> ${reportState.imminentRisk ? 'Rojo (Peligro Inminente)' : 'Amarillo (Asistencia en ruta)'}</div>
+        <div style="margin-bottom: 0.5rem;"><strong>🩺 Patologías sospechadas:</strong> ${reportState.pathologies.length > 0 ? reportState.pathologies.join(', ') : 'No especificadas'}</div>
+        <div style="margin-bottom: 0.5rem;"><strong>🏡 Resguardo temporal:</strong> ${reportState.fosterCapacity}</div>
+        ${phone ? `<div><strong>📞 Contacto de enlace:</strong> ${name || 'Ciudadano'} (${phone})</div>` : '<div><strong>👤 Reporte:</strong> Anónimo</div>'}
+      `;
+
+      document.getElementById('confirmModal').classList.add('active');
+    }
+
+    updateMandatoryCheck();
+  </script>
+</body>
+</html>

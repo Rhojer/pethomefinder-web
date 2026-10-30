@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo de Adopción — No Son De Raza</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  
+  <script>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  </script>
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #EDE8D0;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: #23140C;
+      overflow-x: hidden;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    
+    .catalog-ambient {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 90% 12%, rgba(252, 213, 154, 0.25) 0%, transparent 55%),
+                  radial-gradient(circle at 8% 88%, rgba(151, 82, 45, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    
+    .catalog-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem clamp(1.5rem, 5vw, 4.5rem);
+      background: rgba(237, 232, 208, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(151, 82, 45, 0.12);
+    }
+
+    .catalogo-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #FAF5EE;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      padding: 0.55rem 1.1rem;
+      border-radius: 8px;
+      background: #97522d;
+      border: 1px solid #7E3E1B;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(151, 82, 45, 0.22);
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .catalogo-back-link:hover {
+      background: #823F1C;
+      border-color: #6D3517;
+      transform: translateX(-3px);
+      box-shadow: 0 4px 12px rgba(151, 82, 45, 0.32);
+    }
+
+    .catalog-nav-brand {
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7A4022;
+      font-weight: 600;
+    }
+
+    
+    .catalog-main {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(3rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4.5rem) 6rem;
+    }
+
+    .catalog-hero-header {
+      margin-bottom: 3.5rem;
+    }
+
+    .catalog-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      color: #23140C;
+    }
+
+    .catalog-desc {
+      margin-top: 0.85rem;
+      font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+      color: #523D32;
+      max-width: 620px;
+      line-height: 1.6;
+    }
+
+    
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .catalog-card {
+      background-color: #F8F5EC;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid rgba(151, 82, 45, 0.14);
+      box-shadow: 0 2px 5px rgba(70, 35, 12, 0.04), 0 14px 28px -4px rgba(70, 35, 12, 0.08);
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.25s ease,
+                  box-shadow 0.25s ease;
+      will-change: opacity, transform;
+    }
+
+    .catalog-card.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .catalog-card.in-view:hover {
+      transform: translateY(-6px);
+      border-color: #97522d;
+      box-shadow: 0 4px 10px rgba(70, 35, 12, 0.06), 0 22px 38px -6px rgba(151, 82, 45, 0.18);
+    }
+
+    .card-media-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 11;
+      overflow: hidden;
+      background-color: #DDD4BF;
+    }
+
+    .card-media-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .catalog-card:hover .card-media-img {
+      transform: scale(1.04);
+    }
+
+    .card-content {
+      padding: 1.4rem 1.5rem 1.6rem;
+    }
+
+    .card-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.65rem;
+    }
+
+    .card-name {
+      font-size: 1.32rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #23140C;
+    }
+
+    .card-status {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #8D3E18;
+      background: rgba(151, 82, 45, 0.09);
+      border: 1px solid rgba(151, 82, 45, 0.2);
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      line-height: 1;
+    }
+
+    .card-story-snippet {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: #523D32;
+      margin-bottom: 1.15rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-location-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: #6E4933;
+      padding: 0.45rem 0.65rem;
+      background: rgba(151, 82, 45, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(151, 82, 45, 0.08);
+    }
+
+    .card-location-row svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      stroke: #97522d;
+    }
+
+    
+    .pet-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(35, 18, 10, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+
+    .pet-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .pet-modal {
+      position: relative;
+      width: 100%;
+      max-width: 620px;
+      background-color: #F8F5EC;
+      border: 1px solid rgba(151, 82, 45, 0.2);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px -12px rgba(35, 18, 10, 0.35);
+      transform: scale(0.96) translateY(12px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pet-modal-backdrop.open .pet-modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #97522d;
+      border: 1px solid #7E3E1B;
+      color: #FAF5EE;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(151, 82, 45, 0.25);
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: #803f1e;
+      transform: scale(1.08);
+    }
+
+    .modal-image-wrapper {
+      width: 100%;
+      height: 280px;
+      overflow: hidden;
+      background-color: #DDD4BF;
+    }
+
+    .modal-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-body {
+      padding: 1.8rem 2rem 2.2rem;
+    }
+
+    .modal-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+    }
+
+    .modal-title {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #23140C;
+    }
+
+    .modal-story {
+      font-size: 0.95rem;
+      line-height: 1.62;
+      color: #523D32;
+      margin-bottom: 1.4rem;
+    }
+
+    .modal-address-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.9rem 1rem;
+      background: rgba(151, 82, 45, 0.06);
+      border-radius: 10px;
+      border: 1px solid rgba(151, 82, 45, 0.16);
+    }
+
+    .modal-address-box svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 3px;
+      stroke: #97522d;
+    }
+
+    .modal-address-text {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: #422B1E;
+    }
+
+    
+    .paw-transition-portal {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      pointer-events: none;
+      display: none;
+      background-color: transparent;
+    }
+
+    .paw-transition-portal.active {
+      display: block;
+      pointer-events: all;
+    }
+
+    .paw-fade-curtain {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #97522d;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .paw-portal-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  
+  <div class="catalog-ambient"></div>
+
+  
+  <header class="catalog-nav">
+    <a href="index.html" class="catalogo-back-link" id="backToHomeBtn" aria-label="Volver a la página principal">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>Volver al inicio</span>
+    </a>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="reporte.html" class="catalogo-back-link" style="background: transparent; border-color: rgba(151, 82, 45, 0.35); color: #7A4022; box-shadow: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Reportar rescate</span>
+      </a>
+      <span class="catalog-nav-brand">Refugio Patitas al Rescate</span>
+    </div>
+  </header>
+
+  
+  <main class="catalog-main">
+    <div class="catalog-hero-header">
+      <h1 class="catalog-title">Catálogo de rescates</h1>
+      <p class="catalog-desc">
+        Mascotas rescatadas en Coro y la costa de Falcón que ya están recuperadas, vacunadas y a la espera de un hogar responsable.
+      </p>
+    </div>
+
+    <div class="catalog-grid" id="catalogGrid"></div>
+  </main>
+
+  
+  <div class="pet-modal-backdrop" id="petModal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="pet-modal">
+      <button class="modal-close-btn" id="modalCloseBtn" aria-label="Cerrar ficha">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="modal-image-wrapper">
+        <img src="" alt="" class="modal-image" id="modalImg" />
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-header-row">
+          <h2 class="modal-title" id="modalName"></h2>
+          <span class="card-status">En adopción</span>
+        </div>
+        <p class="modal-story" id="modalReview"></p>
+
+        <div class="modal-address-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <div class="modal-address-text" id="modalAddress"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="paw-transition-portal" id="pawPortal" aria-hidden="true">
+    
+    <div class="paw-fade-curtain" id="pawFadeCurtain"></div>
+
+    
+    <svg class="paw-portal-svg" id="pawPortalSvg" viewBox="0 0 1024 640" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <mask id="pawApertureMask">
+          <rect width="1024" height="640" fill="white" />
+          <g id="pawMaskHole" fill="black">
+            <g transform="translate(-13, -86.5)">
+              <ellipse cx="378" cy="278" rx="44" ry="54" transform="rotate(-26 378 278)" />
+              <ellipse cx="462" cy="190" rx="46" ry="62" transform="rotate(-8 462 190)" />
+              <ellipse cx="591" cy="190" rx="46" ry="62" transform="rotate(8 591 190)" />
+              <ellipse cx="677" cy="278" rx="44" ry="54" transform="rotate(26 677 278)" />
+              <path d="M 525,325 C 575,325 640,360 655,415 C 668,460 645,488 590,486 C 555,484 538,468 525,468 C 512,468 495,484 460,486 C 405,488 382,460 395,415 C 410,360 475,325 525,325 Z" />
+            </g>
+          </g>
+        </mask>
+      </defs>
+      <rect width="1024" height="640" fill="#97522d" mask="url(#pawApertureMask)" />
+    </svg>
+  </div>
+
+  <script>
+    const petsData = [
+      {
+        id: 0,
+        name: "Negrito",
+        image: "assets/dog_mirada.jpg",
+        review: "Llegó tímidamente a la puerta del vehículo tras semanas desamparado cerca de las bombas de servicio. Es de temperamento tranquilo, sumamente noble, dócil y protector una vez que siente que no corre peligro.",
+        address: "Estación de Servicio El Trébol, Av. Independencia, Coro, Falcón"
+      },
+      {
+        id: 1,
+        name: "Pecas",
+        image: "assets/dog_juego.jpg",
+        review: "Juguetón y lleno de vitalidad. A los pocos minutos de recibir alimento inició una reverencia pidiendo juego. Ya pasó su chequeo veterinario inicial y convive con gran energía.",
+        address: "Refugio Patitas al Rescate, Sector Caujarao, Coro, Falcón"
+      },
+      {
+        id: 2,
+        name: "Apolo",
+        image: "assets/dog_carrera.jpg",
+        review: "Corrió hacia nosotros a campo abierto con una mirada esperanzadora. Pese a haber estado a la intemperie, no guarda temores y busca siempre el contacto con las personas.",
+        address: "Carretera Nacional Morón-Coro, km 12, Falcón"
+      },
+      {
+        id: 3,
+        name: "Luna",
+        image: "assets/dog_espera.jpg",
+        review: "Rescatada mientras aguardaba resguardo de la lluvia. Es paciente, silenciosa y muy cariñosa. Ideal para un hogar sereno donde pueda descansar con confianza.",
+        address: "Sector Pantano Abajo, Calle Falcón con Ampíes, Coro"
+      },
+      {
+        id: 4,
+        name: "Max",
+        image: "assets/dog_curioso.jpg",
+        review: "Curioso, sociable y siempre atento a su entorno. Responde con rapidez a las caricias y le agradan los paseos al aire libre.",
+        address: "Urbanización Los Médanos, Vereda 4, Coro, Falcón"
+      },
+      {
+        id: 5,
+        name: "Oreo",
+        image: "assets/dog_carbon.jpg",
+        review: "Con sus distintivas patas blancas y mirada noble, Oreo espera a una familia definitiva tras haber sido hallado en las adyacencias de la zona portuaria.",
+        address: "Refugio Huellitas de la Costa, La Vela de Coro, Falcón"
+      }
+    ];
+
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      smoothWheel: true,
+    });
+    lenis.scrollTo(0, { immediate: true });
+
+    window.addEventListener('pageshow', () => {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+      lenis.scrollTo(0, { immediate: true });
+    });
+
+    window.addEventListener('beforeunload', () => {
+      window.scrollTo(0, 0);
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    const catalogGrid = document.getElementById('catalogGrid');
+
+    const cardObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -30px 0px'
+    });
+
+    petsData.forEach((pet, index) => {
+      const card = document.createElement('article');
+      card.className = 'catalog-card in-view';
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      card.style.transitionDelay = `${(index % 3) * 80}ms`;
+
+      card.innerHTML = `
+        <div class="card-media-wrapper">
+          <img src="${pet.image}" alt="${pet.name}" class="card-media-img" loading="lazy" />
+        </div>
+        <div class="card-content">
+          <div class="card-name-row">
+            <h2 class="card-name">${pet.name}</h2>
+            <span class="card-status">En adopción</span>
+          </div>
+          <p class="card-story-snippet">${pet.review}</p>
+          <div class="card-location-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>${pet.address.split(',')[0]}</span>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => openModal(pet));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openModal(pet);
+        }
+      });
+
+      catalogGrid.appendChild(card);
+      cardObserver.observe(card);
+    });
+
+    const modal = document.getElementById('petModal');
+    const modalImg = document.getElementById('modalImg');
+    const modalName = document.getElementById('modalName');
+    const modalReview = document.getElementById('modalReview');
+    const modalAddress = document.getElementById('modalAddress');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+    function openModal(pet) {
+      modalImg.src = pet.image;
+      modalImg.alt = pet.name;
+      modalName.textContent = pet.name;
+      modalReview.textContent = pet.review;
+      modalAddress.textContent = pet.address;
+
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      lenis.stop();
+      modalCloseBtn.focus();
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      lenis.start();
+    }
+
+    modalCloseBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('open')) {
+        closeModal();
+      }
+    });
+
+    const pawPortal = document.getElementById('pawPortal');
+    const pawFadeCurtain = document.getElementById('pawFadeCurtain');
+    const pawPortalSvg = document.getElementById('pawPortalSvg');
+    const pawMaskHole = document.getElementById('pawMaskHole');
+
+    document.querySelectorAll('a[href*="index"], #backToHomeBtn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        pawPortal.classList.add('active');
+        gsap.killTweensOf([pawFadeCurtain, pawPortalSvg, pawMaskHole]);
+
+        const tl = gsap.timeline();
+
+        tl.set(pawFadeCurtain, { opacity: 0 });
+        tl.set(pawPortalSvg, { opacity: 0 });
+        tl.to(pawFadeCurtain, {
+          opacity: 1,
+          duration: 0.38,
+          ease: 'power2.inOut',
+          onComplete: () => {
+            gsap.set(pawMaskHole, { scale: 0.025, svgOrigin: "512 320" });
+            gsap.set(pawPortalSvg, { opacity: 1 });
+          }
+        });
+
+        tl.to(pawFadeCurtain, {
+          opacity: 0,
+          duration: 0.18,
+          ease: 'power1.out'
+        });
+
+        tl.fromTo(pawMaskHole,
+          { scale: 0.025, svgOrigin: "512 320" },
+          {
+            scale: 75,
+            svgOrigin: "512 320",
+            duration: 1.25,
+            ease: 'power3.inOut',
+            onComplete: () => {
+              window.location.href = 'index.html';
+            }
+          }, '-=0.08');
+      });
+    });
+  </script>
+</body>
+</html>
