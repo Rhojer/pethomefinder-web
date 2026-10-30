@@ -491,10 +491,16 @@
     }
 
     
+    video {
+      background-color: #2b1810;
+    }
+
     .hero-transition-unit {
       position: absolute;
       overflow: hidden;
-      background: #844220;
+      background: #2b1810;
+      isolation: isolate;
+      contain: paint layout;
       will-change: transform, width, height, left, top, border-radius;
       z-index: 18;
       cursor: pointer;
@@ -534,9 +540,11 @@
       height: 100%;
       object-fit: cover;
       object-position: center 52%;
-      transition-property: opacity;
-      transition-duration: 450ms;
-      will-change: opacity;
+      background-color: #2b1810;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
     
@@ -2979,10 +2987,7 @@
 
       
       <div class="hero-transition-unit" id="heroTransitionUnit">
-        <video id="videoA" muted playsinline autoplay loop preload="auto" class="hero-transition-video" style="opacity: 1; z-index: 2;">
-          <source src="assets/hero-dog-director-cut.mp4" type="video/mp4" />
-        </video>
-        <video id="videoB" muted playsinline loop preload="auto" class="hero-transition-video" style="opacity: 0; z-index: 1;">
+        <video id="videoA" muted playsinline autoplay loop preload="auto" class="hero-transition-video">
           <source src="assets/hero-dog-director-cut.mp4" type="video/mp4" />
         </video>
         <div class="slot-caption" id="heroCaption" style="opacity: 0;">
@@ -3690,50 +3695,14 @@
 
   <script>
     const vA = document.getElementById('videoA');
-    const vB = document.getElementById('videoB');
-    const FADE_WINDOW = 0.42;
-    let active = 'A';
-    let isFading = false;
-
-    vA.play().catch(() => {});
-
-    function monitorLoop() {
-      const current = active === 'A' ? vA : vB;
-      const next = active === 'A' ? vB : vA;
-
-      if (current && current.paused) {
-        current.play().catch(() => {});
-      }
-
-      if (current && current.duration && (current.duration - current.currentTime <= FADE_WINDOW)) {
-        if (!isFading) {
-          isFading = true;
-          next.currentTime = 0;
-          next.style.zIndex = '2';
-          current.style.zIndex = '1';
-
-          const playPromise = next.play();
-          if (playPromise !== undefined) {
-            playPromise.then(() => {
-              next.style.opacity = '1';
-              current.style.opacity = '0';
-            }).catch(() => {
-              next.style.opacity = '1';
-            });
-          } else {
-            next.style.opacity = '1';
-            current.style.opacity = '0';
-          }
-
-          setTimeout(() => {
-            active = active === 'A' ? 'B' : 'A';
-            isFading = false;
-          }, FADE_WINDOW * 1000);
+    if (vA) {
+      vA.play().catch(() => {});
+      vA.addEventListener('pause', () => {
+        if (!vA.ended) {
+          vA.play().catch(() => {});
         }
-      }
-      requestAnimationFrame(monitorLoop);
+      });
     }
-    requestAnimationFrame(monitorLoop);
 
     const petsData = [
       {
