@@ -399,7 +399,7 @@
       height: 100%;
       border-radius: 50%;
       transform-origin: center center;
-      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: none;
       will-change: transform;
       z-index: 4;
     }
@@ -499,7 +499,7 @@
       z-index: 18;
       cursor: pointer;
       transform-origin: center center;
-      transition-property: border-color, box-shadow, opacity, filter;
+      transition-property: opacity, filter;
       transition-duration: 350ms;
       transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -2979,10 +2979,10 @@
 
       
       <div class="hero-transition-unit" id="heroTransitionUnit">
-        <video id="videoA" muted playsinline autoplay preload="auto" class="hero-transition-video" style="opacity: 1; z-index: 2;">
+        <video id="videoA" muted playsinline autoplay loop preload="auto" class="hero-transition-video" style="opacity: 1; z-index: 2;">
           <source src="assets/hero-dog-director-cut.mp4" type="video/mp4" />
         </video>
-        <video id="videoB" muted playsinline preload="auto" class="hero-transition-video" style="opacity: 0; z-index: 1;">
+        <video id="videoB" muted playsinline loop preload="auto" class="hero-transition-video" style="opacity: 0; z-index: 1;">
           <source src="assets/hero-dog-director-cut.mp4" type="video/mp4" />
         </video>
         <div class="slot-caption" id="heroCaption" style="opacity: 0;">
@@ -3695,23 +3695,35 @@
     let active = 'A';
     let isFading = false;
 
-    vA.play().catch(console.error);
+    vA.play().catch(() => {});
 
     function monitorLoop() {
       const current = active === 'A' ? vA : vB;
       const next = active === 'A' ? vB : vA;
 
-      if (current.duration && (current.duration - current.currentTime <= FADE_WINDOW)) {
+      if (current && current.paused) {
+        current.play().catch(() => {});
+      }
+
+      if (current && current.duration && (current.duration - current.currentTime <= FADE_WINDOW)) {
         if (!isFading) {
           isFading = true;
           next.currentTime = 0;
           next.style.zIndex = '2';
           current.style.zIndex = '1';
 
-          next.play().then(() => {
+          const playPromise = next.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              next.style.opacity = '1';
+              current.style.opacity = '0';
+            }).catch(() => {
+              next.style.opacity = '1';
+            });
+          } else {
             next.style.opacity = '1';
             current.style.opacity = '0';
-          }).catch(console.error);
+          }
 
           setTimeout(() => {
             active = active === 'A' ? 'B' : 'A';
@@ -3855,7 +3867,6 @@
     let cardHeight = 175;
     let wheelRadius = 420;
     let drumSize = 1000;
-    let isDocked = false;
 
     let drumCenterX = window.innerWidth;
     let drumCenterY = window.innerHeight / 2;
@@ -3876,17 +3887,6 @@
       measureGeometry();
       wheelRotor.innerHTML = '';
       const centerOffset = drumSize / 2;
-
-      if (isDocked) {
-        const rad0 = Math.PI;
-        const posX0 = centerOffset + (wheelRadius * Math.cos(rad0)) - (cardWidth / 2);
-        const posY0 = centerOffset + (wheelRadius * Math.sin(rad0)) - (cardHeight / 2);
-        heroTransitionUnit.style.left = `${posX0}px`;
-        heroTransitionUnit.style.top = `${posY0}px`;
-        heroTransitionUnit.style.width = `${cardWidth}px`;
-        heroTransitionUnit.style.height = `${cardHeight}px`;
-        wheelRotor.appendChild(heroTransitionUnit);
-      }
 
       petsData.forEach((pet, index) => {
         if (index === 0) return;
@@ -3927,11 +3927,10 @@
     function updateCardsCounterRotation(rotAngle) {
       const slots = document.querySelectorAll('.wheel-card-slot');
       slots.forEach(slot => {
-        slot.style.transform = `rotate(${rotAngle}deg)`;
+        if (slot !== heroTransitionUnit) {
+          slot.style.transform = `rotate(${rotAngle}deg)`;
+        }
       });
-      if (isDocked) {
-        heroTransitionUnit.style.transform = `rotate(${rotAngle}deg)`;
-      }
     }
 
     const maxWheelRotation = (totalSlots - 1) * stepAngle;
@@ -3947,11 +3946,7 @@
       const targetScreenTop = drumCenterY - (cardHeight / 2);
 
       if (z < 1) {
-        if (isDocked) {
-          stickyStage.appendChild(heroTransitionUnit);
-          heroTransitionUnit.classList.remove('wheel-card-slot', 'active-slot');
-          isDocked = false;
-        }
+        heroTransitionUnit.classList.remove('wheel-card-slot', 'active-slot');
 
         const stageW = stickyStage ? stickyStage.clientWidth : window.innerWidth;
         const stageH = stickyStage ? stickyStage.clientHeight : window.innerHeight;
@@ -3987,27 +3982,24 @@
           updateActiveSlotDetails(0);
         }
       } else {
-        if (!isDocked) {
-          wheelRotor.appendChild(heroTransitionUnit);
-          heroTransitionUnit.classList.add('wheel-card-slot');
-          heroTransitionUnit.style.border = '';
-          heroTransitionUnit.style.boxShadow = '';
-          heroCaption.style.opacity = '1';
-
-          const centerOffset = drumSize / 2;
-          const rad0 = Math.PI;
-          const slot0X = centerOffset + (wheelRadius * Math.cos(rad0)) - (cardWidth / 2);
-          const slot0Y = centerOffset + (wheelRadius * Math.sin(rad0)) - (cardHeight / 2);
-
-          heroTransitionUnit.style.left = `${slot0X}px`;
-          heroTransitionUnit.style.top = `${slot0Y}px`;
-          heroTransitionUnit.style.width = `${cardWidth}px`;
-          heroTransitionUnit.style.height = `${cardHeight}px`;
-          heroTransitionUnit.style.borderRadius = '12px';
-          isDocked = true;
-        }
+        heroTransitionUnit.classList.add('wheel-card-slot');
+        heroTransitionUnit.style.border = '';
+        heroTransitionUnit.style.boxShadow = '';
+        heroCaption.style.opacity = '1';
 
         const rot = animState.wheelRot;
+        const rad0 = (180 - rot) * (Math.PI / 180);
+        const curSlot0Left = drumCenterX + (wheelRadius * Math.cos(rad0)) - (cardWidth / 2);
+        const curSlot0Top = drumCenterY + (wheelRadius * Math.sin(rad0)) - (cardHeight / 2);
+
+        heroTransitionUnit.style.position = 'absolute';
+        heroTransitionUnit.style.left = `${curSlot0Left}px`;
+        heroTransitionUnit.style.top = `${curSlot0Top}px`;
+        heroTransitionUnit.style.width = `${cardWidth}px`;
+        heroTransitionUnit.style.height = `${cardHeight}px`;
+        heroTransitionUnit.style.borderRadius = '12px';
+        heroTransitionUnit.style.transform = 'none';
+
         currentAngle = rot;
         wheelRotor.style.transform = `rotate(${-rot}deg)`;
         updateCardsCounterRotation(rot);
